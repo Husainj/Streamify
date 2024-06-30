@@ -4,7 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
-
+import fs from "fs"
 
 const generateAccessAndRefereshTokens = async (userId) => {
   try {
@@ -49,13 +49,14 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   //multer giving file path
+  
   const avatarLocalPath = req.files?.avatar[0]?.path;
 
   //we cant check for coverimage like this because this code means that we are expecting to get an array from req.files
   //coverimage , but when nothing is present then undefined error will come.
   // const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
-  let coverImageLocalPath;
+  let coverImageLocalPath
   if (
     req.files &&
     Array.isArray(req.files.coverImage) &&
@@ -247,7 +248,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(200, req.user, " Current user fetched successfully ");
+    .json(new ApiResponse(200, req.user, " Current user fetched successfully "));
 });
 
 const updateAccountDetails = asyncHandler(async(req , res) => {
@@ -257,7 +258,7 @@ const updateAccountDetails = asyncHandler(async(req , res) => {
         throw new ApiError(400 , "All fields are required")
     }
 
- const user =  User.findByIdAndUpdate(
+ const user = await User.findByIdAndUpdate(
     req.user?._id,
         {
             $set:{
@@ -288,6 +289,9 @@ const updateUserAvatar = asyncHandler(async(req, res)=>{
     throw new ApiError(400 , "Error while uploading on avatar")
    }
 
+   fs.unlinkSync(avatarLocalPath)
+
+
  const user =  await User.findByIdAndUpdate(
     req.user?._id,
     {
@@ -306,18 +310,20 @@ const updateUserAvatar = asyncHandler(async(req, res)=>{
 })
 
 const updateUserCoverImage = asyncHandler(async(req, res)=>{
-    const coverImageLocalPath = req.file?.path
+    const coverImageLocalPathNew = req.file?.path
  
-    if (!coverImageLocalPath) {
+    if (!coverImageLocalPathNew) {
      throw new ApiError(400 , "coverImage file is missing")
     }
  
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+    const coverImage = await uploadOnCloudinary(coverImageLocalPathNew)
  
     if (!coverImage.url) {
      throw new ApiError(400 , "Error while uploading on coverImage")
     }
  
+    fs.unlinkSync(coverImageLocalPathNew)
+
  const user =   await User.findByIdAndUpdate(
      req.user?._id,
      {
