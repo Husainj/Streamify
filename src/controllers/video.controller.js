@@ -5,7 +5,7 @@ import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
-
+import fs from "fs"
 
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
@@ -88,15 +88,63 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 })
 
+//✅
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+    const {title , description} = req.body
+    const thumbnailLocalPath = req.file?.path
     //TODO: update video details like title, description, thumbnail
+    if(!videoId){
+        throw new ApiError(400 , "Video Id not found")
+    }
+
+    if(!(title || description || thumbnailLocalPath) ){
+       throw new ApiError(400 , "Title, description ,thumbnail not found")
+    }
+
+    let updateFields = {};
+    if (title) {
+        updateFields.title = title;
+    }
+
+    if (description) {
+        updateFields.description = description;
+    }
+
+    if (thumbnailLocalPath) {
+        const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+        if (!thumbnail.url) {
+            throw new ApiError(400, "Error while uploading thumbnail");
+        }
+        updateFields.thumbnail = thumbnail.url;
+   
+        
+    }
+ 
+   
+
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        { $set: updateFields },
+        { new: true }
+    );
+
+
+
+  
+    return res
+    .status(200)
+    .json(new ApiResponse(200 , video , "Video updated successfully"))
+
 
 })
 
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: delete video
+
+    
+
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
