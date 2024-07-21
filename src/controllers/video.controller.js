@@ -6,10 +6,54 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import fs from "fs"
-
+//✅
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-    //TODO: get all videos based on query, sort, pagination
+    const { page = 1, limit = 10, query, sortBy = 'createdAt', sortType = 'desc', userId } = req.query;
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Build filter criteria
+    const filter = {};
+    if (query) {
+        filter.$or = [
+            { title: { $regex: query, $options: 'i' } },
+            { description: { $regex: query, $options: 'i' } }
+        ];
+    }
+    if (userId) {
+        filter.owner = userId;
+    }
+
+    // Build sort criteria
+    const sort = {};
+    if (sortBy && sortType) {
+        sort[sortBy] = sortType === 'asc' ? 1 : -1;
+    }
+
+    try {
+        // Find videos with filter, sort, and pagination
+        const videos = await Video.find(filter)
+            .sort(sort)
+            .skip(skip)
+            .limit(limitNumber);
+
+        // Get total count of videos for pagination
+        const totalVideos = await Video.countDocuments(filter);
+
+        // Prepare pagination info
+        const pagination = {
+            currentPage: pageNumber,
+            totalPages: Math.ceil(totalVideos / limitNumber),
+            totalVideos
+        };
+
+        return res.status(200).json(new ApiResponse(200, { videos, pagination }, "Videos retrieved successfully"));
+    } catch (error) {
+        return res.status(500).json(new ApiError(500, "Internal server error"));
+    }
 })
 
 
