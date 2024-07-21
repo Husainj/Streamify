@@ -13,7 +13,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 })
 
 
-//no of views left , isPublished left
+//no of views left 
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description} = req.body
     // TODO: get video, upload to cloudinary, create video
@@ -159,8 +159,27 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 })
 
+//✅
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+
+    if(!videoId){
+        throw new ApiError(400 , "Video Id not found")
+    }
+
+    const video = await Video.findById(videoId)
+
+    if(!video){
+        throw new ApiError(400 , "Video not found")
+    }
+
+    video.isPublished = !video.isPublished;
+    await video.save();
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200 , video , "Video status toggled successfully"))
+
 })
 
 export {
