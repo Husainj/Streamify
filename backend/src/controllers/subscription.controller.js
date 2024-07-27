@@ -55,24 +55,43 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 })
 
 // controller to return subscriber list of a channel
+
+//✅
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const {channelId} = req.params
 
-    if(!channelId){
-        throw new ApiError(400 , "No channel Id provided")
-    }
-
-    const userId = req.user._id
-
-    if(!userId){
-        throw new ApiError(400 , "No user Id found ")
+    if (!isValidObjectId(channelId)) {
+        throw new ApiError(400, "Invalid channel Id")
     }
     
     const subscriberList = await Subscription.aggregate(
         [
-            {$match : {channel: channelId}},
+            {
+                $match:{
+                    channel : new mongoose.Types.ObjectId(channelId)
+                }
+            },
+            {
+                $lookup:{
+                    from: "users",
+                    localField: "subscriber",
+                    foreignField: "_id",
+                    as:"subscriber"
+                }
+            },
+            {
+                $addFields:{
+                    subscriber : {$first: "$subscriber"}
+                }
+            },
             {$project : {
-                "subscriber" : 1
+                _id:0,
+                'subscriber._id': 1,
+                'subscriber.username': 1,
+                'subscriber.fullname': 1,
+                'subscriber.email': 1,
+                'subscriber.avatar': 1,
+                'subscriber.coverImage': 1
             }}
         ]
     )
@@ -87,6 +106,51 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
     const { subscriberId } = req.params
+
+    if (!isValidObjectId(subscriberId)) {
+        throw new ApiError(400, "Invalid Subscriber Id")
+    }
+
+    const subscribedChannelList = await Subscription.aggregate(
+        [
+            {
+                $match:{
+                    subscriber : new mongoose.Types.ObjectId(subscriberId)
+                }
+            },
+            {
+                $lookup:{
+                    from:"users",
+                    localField:"channel",
+                    foreignField:"_id",
+                    as:"channels"
+                }
+            },
+            {
+                $addFields:{
+                    channels : {$first: "$channels"}
+                }
+            },
+            {
+                $project:{
+                    _id:0,
+                    'channels._id': 1,
+                    'channels.username': 1,
+                    'channels.fullname': 1,
+                    'channels.email': 1,
+                    'channels.avatar': 1,
+                    'channels.coverImage': 1
+                }
+            }
+
+        ]
+    )
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200 , subscribedChannelList ,"Channel list fetched successfully"))
+
+
 })
 
 export {
