@@ -5,10 +5,32 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 
 
+ //TODO: create playlist
 const createPlaylist = asyncHandler(async (req, res) => {
     const {name, description} = req.body
 
-    //TODO: create playlist
+    if (
+        [name, description].some((field) => field?.trim() === "")
+      ) {
+        throw new ApiError(400, "All fields are required");
+      }
+
+    const playlist = await Playlist.create({
+        name,
+        description,
+        owner : req.user._id
+        })
+
+        if(!playlist){
+            throw new ApiError(400 , "Playlist not created")
+        }
+
+return res
+.status(200)
+.json(new ApiResponse(200 , playlist , "New playlist created"))
+    
+
+   
 })
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
