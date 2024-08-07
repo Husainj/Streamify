@@ -15,7 +15,7 @@ const Header = () => {
           <button className="mr-4 lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <Menu size={24} />
           </button>
-          <div className="flex items-center">
+          <div className="flex items-center md:mr-40">
             <span className="text-xl font-bold">Vidflix</span>
           </div>
         </div>
@@ -33,7 +33,7 @@ const Header = () => {
           </div>
 
         {/* Icons */}
-        <div className="flex items-center">
+        <div className="flex items-center md:ml-40">
             
             {isLoggedIn ? (
               <div className="flex items-center">
@@ -70,6 +70,7 @@ const Header = () => {
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="mt-4 lg:hidden">
+
           <nav>
             <a href="#" className="block py-2">Home</a>
             <a href="#" className="block py-2">Trending</a>
