@@ -1,7 +1,10 @@
 import React from 'react';
 import VideoCard from '../VideoCard/VideoCard';
 import thumbnail from "../../assets/thumbnail.jpg"
-
+import thumbnail3 from "../../assets/thumbnail2.jpeg"
+import thumbnail4 from "../../assets/thumbnail3.jpeg"
+import Sidebar from '../Sidebar/Sidebar';
+import thumbnail2 from "../../assets/react.svg"
 const VideoFeed = () => {
   const videos = [
     {
@@ -17,7 +20,7 @@ const VideoFeed = () => {
         id: 2,
         title: 'Sample Video 1',
         description: 'This is a sample video description.',
-        thumbnail: thumbnail,
+        thumbnail: thumbnail2,
         creator: 'Creator 1',
         views: '100K views',
         timestamp: '1 day ago',
@@ -26,7 +29,7 @@ const VideoFeed = () => {
         id: 3,
         title: 'Sample Video 1',
         description: 'This is a sample video description.',
-        thumbnail: thumbnail,
+        thumbnail: thumbnail3,
         creator: 'Creator 1',
         views: '100K views',
         timestamp: '1 day ago',
@@ -35,7 +38,7 @@ const VideoFeed = () => {
         id: 4,
         title: 'Sample Video 1',
         description: 'This is a sample video description.',
-        thumbnail: thumbnail,
+        thumbnail: thumbnail4,
         creator: 'Creator 1',
         views: '100K views',
         timestamp: '1 day ago',
@@ -90,11 +93,22 @@ const VideoFeed = () => {
   ];
 
   return (
-    <div className="flex flex-wrap justify-center md:justify-start p-4 flex-1 bg-gray-900">
-      {videos.map((video) => (
-        <VideoCard key={video.id} video={video} />
-      
-      ))}
+    <div>
+    
+      <div className="flex flex-1 bg-gray-900 mt-14 md:mt-16">
+        {/* Show the sidebar on larger screens */}
+       <div className='md:w-16'>
+          <Sidebar />
+          </div>
+
+        <div className="p-4 md:ml-11 flex flex-wrap justify-center lg:justify-start overflow-y-auto flex-1">
+          {videos.map((video) => (
+            <div key={video.id} className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4">
+              <VideoCard video={video} />
+            </div>
+          ))}   
+        </div>
+      </div>
     </div>
   );
 };
