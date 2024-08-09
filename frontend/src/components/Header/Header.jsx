@@ -1,11 +1,25 @@
 import React, { useState } from 'react';
-import { Menu, Search, Bell, User, Video, LogIn } from 'lucide-react';
+import { Menu, Search, Bell, User, Video, LogIn, PlusCircle } from 'lucide-react';
+import Login from '../Auth/Login';
+import Register from '../Auth/Register';
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-  const toggleLogin = () => setIsLoggedIn(!isLoggedIn);
+  const toggleLogin = () => setShowLoginModal(!showLoginModal);
+  const toggleRegister = () => setShowRegisterModal(!showRegisterModal);
+  const switchToRegister = () => {
+    setShowLoginModal(false);
+    setShowRegisterModal(true);
+  };
+  const switchToLogin = () => {
+    setShowRegisterModal(false);
+    setShowLoginModal(true);
+  };
 
   return (
     <header className="bg-black text-white p-4 fixed top-0 left-0 right-0 z-50">
@@ -37,7 +51,7 @@ const Header = () => {
           {isLoggedIn ? (
             <div className="flex items-center">
               <button className="p-2">
-                <Video size={24} />
+                <PlusCircle size={24} />
               </button>
               <button className="p-2">
                 <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
@@ -76,6 +90,16 @@ const Header = () => {
             <a href="#" className="block py-2">You</a>
           </nav>
         </div>
+      )}
+
+
+      {/*For login and register Modal*/}
+      {showLoginModal && (
+        <Login toggleLogin={toggleLogin} switchToRegister={switchToRegister} />
+      )}
+
+      {showRegisterModal && (
+        <Register toggleRegister={toggleRegister} switchToLogin={switchToLogin} />
       )}
     </header>
   );
