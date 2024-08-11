@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import Loading from '../Loading/Loading';
-const Login = ({ toggleLogin, switchToRegister }) => {
+import api from "../../services/api"
+import { useDispatch } from 'react-redux';
+import { setUser } from '../../redux/slices/userSlice';
+import { useNavigate} from 'react-router-dom'
+
+const Login = ({ toggleLogin, switchToRegister , setIsLoggedIn}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);  // Reset error state before each request
@@ -13,22 +19,41 @@ const Login = ({ toggleLogin, switchToRegister }) => {
 
     try {
   
-      const response = await axios.post('http://localhost:8000/api/v1/users/login', {
+      // const response = await axios.post('http://localhost:8000/api/v1/users/login', {
+      //   username,
+      //   password
+      // });
+
+      const response = await api.post('/users/login' , {
         username,
         password
-      });
+      })
+      
+      console.log("This is the data recieved :: ")
+      console.log( "Data recieved",response)
+      console.log("Response.data : " , response.data)
+      console.log("response.data.data : " , response.data.data)
 
-      console.log(response.data)
-      if (response.data.status === 200) {
-        alert('User LoggedIn successfully');
+      const { accessToken } = response.data.data
+
+      console.log("Access token : " , accessToken)
+      console.log("STATUS" , response.status)
+
+      if (response.status === 200) {
+        localStorage.setItem("accesstoken" , accessToken)
+      
+        // dispatch(setUser(response.data.user));
+       setError("User login successful in frontend")
+       
+       setIsLoggedIn(true);
         toggleLogin();
-        
+        navigate('/')
       } else {
         setError(response.data.message);
       }
 
     } catch (error) {
-      setError('An error occurred while Login the user' , error);
+      setError('An error occurred while Login the user in frontend' , error);
     }
     finally {
       setLoading(false);  // Set loading to false when the request completes

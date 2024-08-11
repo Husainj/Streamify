@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Menu, Search, Bell, User, Video, LogIn, PlusCircle } from 'lucide-react';
 import Login from '../Auth/Login';
 import Register from '../Auth/Register';
-
+import Testing from '../Testing/Testing';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,7 +30,7 @@ const Header = () => {
             <Menu size={24} />
           </button>
           <div className="flex items-center md:mr-40">
-            <span className="text-xl font-bold">Vidflix</span>
+            <span className="text-xl font-bold">Vidflix    </span>
           </div>
         </div>
 
@@ -95,7 +95,7 @@ const Header = () => {
 
       {/*For login and register Modal*/}
       {showLoginModal && (
-        <Login toggleLogin={toggleLogin} switchToRegister={switchToRegister} />
+        <Login toggleLogin={toggleLogin} switchToRegister={switchToRegister} setIsLoggedIn={setIsLoggedIn}/>
       )}
 
       {showRegisterModal && (
