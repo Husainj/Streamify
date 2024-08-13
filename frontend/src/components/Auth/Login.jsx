@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
 import Loading from '../Loading/Loading';
 import api from "../../services/api"
-import { useDispatch } from 'react-redux';
 import { setUser } from '../../redux/slices/userSlice';
 import { useNavigate} from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import {toggleIsLogin} from '../../redux/slices/authSlice'
 
-const Login = ({ toggleLogin, switchToRegister , setIsLoggedIn}) => {
+
+
+const Login = ({ toggleLogin, switchToRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);  // Reset error state before each request
@@ -35,17 +41,18 @@ const Login = ({ toggleLogin, switchToRegister , setIsLoggedIn}) => {
       console.log("response.data.data : " , response.data.data)
 
       const { accessToken } = response.data.data
-
+      const {refreshToken} = response.data.data
       console.log("Access token : " , accessToken)
+      console.log("Refresh token : " , refreshToken)
       console.log("STATUS" , response.status)
 
       if (response.status === 200) {
-        localStorage.setItem("accesstoken" , accessToken)
-      
         // dispatch(setUser(response.data.user));
        setError("User login successful in frontend")
+
+       dispatch(toggleIsLogin())
        
-       setIsLoggedIn(true);
+      //  setIsLoggedIn(true);
         toggleLogin();
         navigate('/')
       } else {
@@ -56,7 +63,7 @@ const Login = ({ toggleLogin, switchToRegister , setIsLoggedIn}) => {
       setError('An error occurred while Login the user in frontend' , error);
     }
     finally {
-      setLoading(false);  // Set loading to false when the request completes
+      setLoading(false); 
     }
 
 

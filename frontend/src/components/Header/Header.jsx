@@ -1,17 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Menu, Search, Bell, User, Video, LogIn, PlusCircle } from 'lucide-react';
 import Login from '../Auth/Login';
 import Register from '../Auth/Register';
 import Testing from '../Testing/Testing';
+import { useDispatch , useSelector } from 'react-redux';
+import api from '../../services/api';
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   const toggleLogin = () => setShowLoginModal(!showLoginModal);
   const toggleRegister = () => setShowRegisterModal(!showRegisterModal);
+
+
+  const isItLoggedIn = useSelector((state) => state.auth.isLoggedIn)
+
+  const handleLogout = async() =>{
+   try {
+const response = await api.post('/users/logout')
+    localStorage.removeItem("accesstoken")
+    localStorage.removeItem("refreshtoken")
+console.log(response)
+   } catch (error) {
+    console.log(error)
+   }
+  }
+
   const switchToRegister = () => {
     setShowLoginModal(false);
     setShowRegisterModal(true);
@@ -30,7 +48,7 @@ const Header = () => {
             <Menu size={24} />
           </button>
           <div className="flex items-center md:mr-40">
-            <span className="text-xl font-bold">Vidflix    </span>
+            <span className="text-xl font-bold">Vidflix {isItLoggedIn ? 'Logged In' : 'Logged Out'}   </span>
           </div>
         </div>
 
@@ -48,7 +66,7 @@ const Header = () => {
 
         {/* Icons */}
         <div className="flex items-center md:ml-40">
-          {isLoggedIn ? (
+          {isItLoggedIn ? (
             <div className="flex items-center">
               <button className="p-2">
                 <PlusCircle size={24} />
@@ -56,6 +74,7 @@ const Header = () => {
               <button className="p-2">
                 <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
               </button>
+              <button onClick={handleLogout}>Logout</button>
             </div>
           ) : (
             <button className="p-2 flex items-center" onClick={toggleLogin}>
@@ -95,7 +114,7 @@ const Header = () => {
 
       {/*For login and register Modal*/}
       {showLoginModal && (
-        <Login toggleLogin={toggleLogin} switchToRegister={switchToRegister} setIsLoggedIn={setIsLoggedIn}/>
+        <Login toggleLogin={toggleLogin} switchToRegister={switchToRegister} />
       )}
 
       {showRegisterModal && (

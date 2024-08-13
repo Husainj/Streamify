@@ -3,8 +3,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken"
 
-export const verifyJWT = asyncHandler(async(req , res , next)=>{
+export const verifyJWT = asyncHandler(async(req , _ , next)=>{
   try {
+    //We first try to fetch the access token from the cookie , but if it is not found in cookie then we try to take it from the header
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
   
     if(!token){

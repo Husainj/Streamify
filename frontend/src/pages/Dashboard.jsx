@@ -12,12 +12,21 @@ function Dashboard() {
             console.log(error)
         }
     }
-
+    const handleLogout = async() =>{
+        try {
+     const response = await api.post('/users/logout')
+         // localStorage.removeItem("accesstoken")
+         // localStorage.removeItem("refreshtoken")
+     console.log(response)
+        } catch (error) {
+         console.log(error)
+        }
+       }
   return (
 <>
 <h1>Hello</h1>
 <button onClick={handleSubmit}>Get channel profile</button>
-
+<button onClick={handleLogout}>Logout</button>
 
 </>    
 
