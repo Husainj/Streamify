@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import Loading from '../Loading/Loading';
 import api from "../../services/api"
-import { setUser } from '../../redux/slices/userSlice';
 import { useNavigate} from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import {toggleIsLogin} from '../../redux/slices/authSlice'
+// import {toggleIsLogin} from '../../redux/slices/authSlice'
+import { ToastContainer , toast } from 'react-toastify';
+import {setUser , clearUser} from '../../redux/slices/authSlice'
 
 
 
@@ -16,6 +17,7 @@ const Login = ({ toggleLogin, switchToRegister }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const user = useSelector((state) => state.auth.user);
 
 
   const handleLogin = async (e) => {
@@ -47,19 +49,21 @@ const Login = ({ toggleLogin, switchToRegister }) => {
       console.log("STATUS" , response.status)
 
       if (response.status === 200) {
-        // dispatch(setUser(response.data.user));
        setError("User login successful in frontend")
-
-       dispatch(toggleIsLogin())
-       
+      //  dispatch(toggleIsLogin())
+      dispatch(setUser(response.data.data.user.fullname));
+      //  dispatch(login())
       //  setIsLoggedIn(true);
         toggleLogin();
-        navigate('/')
-      } else {
-        setError(response.data.message);
+    
       }
 
     } catch (error) {
+     
+      console.log("Error" , error)
+      console.log("Error.response" , error.response)
+      console.log("Errro.response.data" , error.response.data)
+      toast.error(error.response.data)
       setError('An error occurred while Login the user in frontend' , error);
     }
     finally {
@@ -72,6 +76,7 @@ const Login = ({ toggleLogin, switchToRegister }) => {
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+      <ToastContainer />
       <div className="bg-gray-800 text-white p-6 rounded-lg w-full max-w-sm">
         <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
         {error && <p className="text-red-500 text-center">{error}</p>}

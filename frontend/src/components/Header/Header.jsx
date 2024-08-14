@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Menu, Search, Bell, User, Video, LogIn, PlusCircle } from 'lucide-react';
 import Login from '../Auth/Login';
 import Register from '../Auth/Register';
-import Testing from '../Testing/Testing';
 import { useDispatch , useSelector } from 'react-redux';
 import api from '../../services/api';
 
@@ -17,18 +16,11 @@ const Header = () => {
   const toggleRegister = () => setShowRegisterModal(!showRegisterModal);
 
 
+  // const isItLoggedIn = useSelector((state) => state.auth.isLoggedIn)
   const isItLoggedIn = useSelector((state) => state.auth.isLoggedIn)
-
-  const handleLogout = async() =>{
-   try {
-const response = await api.post('/users/logout')
-    localStorage.removeItem("accesstoken")
-    localStorage.removeItem("refreshtoken")
-console.log(response)
-   } catch (error) {
-    console.log(error)
-   }
-  }
+  console.log("State of logged In user : " , isItLoggedIn )
+  const user = useSelector((state)=> state.auth.user)
+  console.log("User : " , user )
 
   const switchToRegister = () => {
     setShowLoginModal(false);
@@ -48,7 +40,7 @@ console.log(response)
             <Menu size={24} />
           </button>
           <div className="flex items-center md:mr-40">
-            <span className="text-xl font-bold">Vidflix {isItLoggedIn ? 'Logged In' : 'Logged Out'}   </span>
+            <span className="text-xl font-bold">Vidflix {isItLoggedIn ? 'Logged In' : 'Logged Out'}  {user} </span>
           </div>
         </div>
 
@@ -74,7 +66,7 @@ console.log(response)
               <button className="p-2">
                 <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
               </button>
-              <button onClick={handleLogout}>Logout</button>
+              {/* <button >Logout</button> */}
             </div>
           ) : (
             <button className="p-2 flex items-center" onClick={toggleLogin}>
