@@ -17,7 +17,9 @@ function App() {
       try {
         // Make a request to a protected route
         const response = await api.get('/users/current-user');
-        dispatch(setUser(response.data.data.fullname));
+        const {  data } = response.data;
+        const { fullname, username, email, avatar, coverImage } = data;
+        dispatch(setUser({ fullname, username, email, avatar, coverImage }));
       } catch (error) {
         // If the request fails, the user is not authenticated
         console.error('Authentication check failed', error);

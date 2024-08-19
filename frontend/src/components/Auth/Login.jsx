@@ -17,7 +17,7 @@ const Login = ({ toggleLogin, switchToRegister }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const user = useSelector((state) => state.auth.user);
+  
 
 
   const handleLogin = async (e) => {
@@ -40,18 +40,18 @@ const Login = ({ toggleLogin, switchToRegister }) => {
       console.log("This is the data recieved :: ")
       console.log( "Data recieved",response)
       console.log("Response.data : " , response.data)
-      console.log("response.data.data : " , response.data.data)
+      console.log("response.data.data : " , response.data.data.user)
 
-      const { accessToken } = response.data.data
-      const {refreshToken} = response.data.data
+      const { accessToken, refreshToken, user } = response.data.data;
       console.log("Access token : " , accessToken)
       console.log("Refresh token : " , refreshToken)
       console.log("STATUS" , response.status)
 
       if (response.status === 200) {
        setError("User login successful in frontend")
+       const { fullname, username, email, avatar, coverImage } = user;
       //  dispatch(toggleIsLogin())
-      dispatch(setUser(response.data.data.user.fullname));
+      dispatch(setUser({ fullname, username, email, avatar, coverImage }));
       //  dispatch(login())
       //  setIsLoggedIn(true);
         toggleLogin();

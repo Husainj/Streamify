@@ -8,7 +8,7 @@ function Dashboard() {
         try {
             const response = await api.get('/users/current-user')
 
-            console.log(response.data.data.fullname)
+            console.log(response.data)
         } catch (error) {
             console.log(error)
         }
