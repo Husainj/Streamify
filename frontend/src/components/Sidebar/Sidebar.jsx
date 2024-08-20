@@ -1,13 +1,22 @@
 // Sidebar.js
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+const navigateToHome = () =>{
+  navigate('/')
+}
+
+const handleDashboardClick =()=>{
+  navigate('/dashboard')
+}
   return (
     <div className="fixed left-0 h-full w-fit bg-gray-800 text-white p-4 border-r border-gray-700 hidden md:block">
       <div className="mb-4">
     
         <ul>
-          <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md">
+          <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md" onClick={navigateToHome}>
             <svg
               className="w-6 h-6"
               fill="none"
@@ -58,7 +67,7 @@ const Sidebar = () => {
             </svg>
             <span className="mt-2">Subscriptions</span>
           </li>
-          <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md">
+          <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md" onClick={handleDashboardClick} >
             <svg
               className="w-6 h-6"
               fill="none"

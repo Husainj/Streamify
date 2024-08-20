@@ -40,7 +40,7 @@ const Login = ({ toggleLogin, switchToRegister }) => {
       console.log("This is the data recieved :: ")
       console.log( "Data recieved",response)
       console.log("Response.data : " , response.data)
-      console.log("response.data.data : " , response.data.data.user)
+      console.log("response.data.data.user : " , response.data.data.user)
 
       const { accessToken, refreshToken, user } = response.data.data;
       console.log("Access token : " , accessToken)
@@ -49,9 +49,9 @@ const Login = ({ toggleLogin, switchToRegister }) => {
 
       if (response.status === 200) {
        setError("User login successful in frontend")
-       const { fullname, username, email, avatar, coverImage } = user;
+       const { fullname, username, email, avatar, coverImage , _id} = user;
       //  dispatch(toggleIsLogin())
-      dispatch(setUser({ fullname, username, email, avatar, coverImage }));
+      dispatch(setUser({ fullname, username, email, avatar, coverImage , _id }));
       //  dispatch(login())
       //  setIsLoggedIn(true);
         toggleLogin();

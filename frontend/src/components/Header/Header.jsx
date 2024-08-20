@@ -4,13 +4,14 @@ import Login from '../Auth/Login';
 import Register from '../Auth/Register';
 import { useDispatch, useSelector } from 'react-redux';
 import {  clearUser} from '../../redux/slices/authSlice'// Import your logout action
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const toggleLogin = () => setShowLoginModal(!showLoginModal);
@@ -34,6 +35,9 @@ const Header = () => {
          setShowDropdown(false);
   };
 
+  const handlePlusClick = () => {
+    navigate('/studio');
+  };
   const switchToRegister = () => {
     setShowLoginModal(false);
     setShowRegisterModal(true);
@@ -88,7 +92,7 @@ const Header = () => {
         <div className="flex items-center md:ml-40 relative">
           {isItLoggedIn ? (
             <div className="flex items-center">
-              <button className="p-2">
+              <button className="p-2" onClick={handlePlusClick}>
                 <PlusCircle size={24} />
               </button>
               <button className="p-2 relative" onClick={toggleDropdown}>

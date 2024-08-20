@@ -1,4 +1,3 @@
-import { useState } from 'react'
 
 import './App.css'
 import LandingPage from './pages/LandingPage'
@@ -8,7 +7,7 @@ import React, { useEffect } from 'react';
 import { useDispatch , useSelector } from 'react-redux';
 import {setUser, clearUser} from './redux/slices/authSlice'
 import api from './services/api'
-import Cookies from 'js-cookie';
+import Studio from './pages/Studio';
 function App() {
   const dispatch = useDispatch();
 
@@ -40,6 +39,7 @@ function App() {
   <Routes>
         <Route path='/' element={<LandingPage/>} />
         <Route path='/dashboard' element={<Dashboard />} />
+        <Route path="/studio" element={<Studio />} />
   </Routes>
    </>
   )
