@@ -12,8 +12,8 @@ const VideoCard = ({ video }) => {
       />
       <div className="p-2">
         <h4 className="font-bold text-white">{video.title}</h4>
-        <p className="text-gray-400">{video.creator}</p>
-        <p className="text-gray-400">{video.views} • {video.timestamp}</p>
+        <p className="text-gray-400">{video.owner}</p>
+        <p className="text-gray-400">{video.views} • {video.duration}</p>
       </div>
     </div>
   );
