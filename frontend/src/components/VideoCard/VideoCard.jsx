@@ -1,8 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const VideoCard = ({ video }) => {
   return (
-    
+    <Link to={`/videos/${video._id}`}> 
     <div className="md:w-80 m-3 bg-gray-800 rounded-lg overflow-hidden shadow-lg relative">
       {/* Thumbnail with duration overlay */}
       <div className="relative">
@@ -24,6 +25,7 @@ const VideoCard = ({ video }) => {
         <p className="text-gray-400">Views : {video.views}</p>
       </div>
     </div>
+    </Link>
   );
 };
 

@@ -9,14 +9,17 @@ const authSlice = createSlice({
       email: null,
       avatar: null,
       coverImage: null,
-      _id:null
+      _id: null
     },
     isLoggedIn: false,
   },
   reducers: {
     setUser: (state, action) => {
       const { fullname, username , email, avatar, coverImage , _id} = action.payload;
+
       state.user = { fullname, username ,email, avatar, coverImage , _id };
+
+      console.log('setUser payload:', action.payload);
       state.isLoggedIn = true;
     },
     clearUser: (state) => {

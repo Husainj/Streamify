@@ -72,7 +72,7 @@ const Header = () => {
             <Menu size={24} />
           </button>
           <div className="flex items-center md:mr-40">
-            <span className="text-xl font-bold">Vidflix {isItLoggedIn ? 'Logged In' : 'Logged Out'} {user.fullname}</span>
+            <span className="text-xl font-bold">Vidflix {isItLoggedIn ? 'Logged In' : 'Logged Out'} {user.fullname}{console.log("User id : " , user._id )}</span>
           </div>
         </div>
 
