@@ -1,8 +1,9 @@
 import React from 'react';
 import { Edit, Trash } from 'lucide-react';
-
+import { Link } from 'react-router-dom';
 const VideoCardStudio = ({ video, onEdit, onDelete }) => {
   return (
+    <Link to={`/videos/${video._id}`}> 
     <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
       <div className="relative">
         <img
@@ -28,6 +29,7 @@ const VideoCardStudio = ({ video, onEdit, onDelete }) => {
       <h3 className="text-xl font-semibold mt-2">{video.title}</h3>
       <p className="text-gray-400 mt-1">{video.description}</p>
     </div>
+    </Link>
   );
 };
 

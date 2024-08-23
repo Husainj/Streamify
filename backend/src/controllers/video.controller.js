@@ -122,6 +122,10 @@ const getVideoById = asyncHandler(async (req, res) => {
     }
 
     const video = await Video.findById(videoId)
+    .populate({
+      path: 'owner',
+      select: 'username fullname' // Only select the username and fullname fields
+    });
 
     if(!video){
         throw new ApiError(404 ,"Video not found")
