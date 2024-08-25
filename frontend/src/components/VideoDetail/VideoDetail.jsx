@@ -10,14 +10,24 @@ import 'react-toastify/dist/ReactToastify.css';
 const VideoDetail = () => {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
+
   const [comments, setComments] = useState([]);
-  const [likes, setLikes] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [editingComment, setEditingComment] = useState(null);
   const [updatedCommentText, setUpdatedCommentText] = useState('');
+
+  const [likes, setLikes] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const [isSubscribed , setIsSubscribed] = useState(false)
+  const [channelAvatar , setChannelAvatar] = useState(null)
+  const [subscriberCount , SetSubscriberCount] = useState(0)
+
+
+
   const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
@@ -54,10 +64,23 @@ const VideoDetail = () => {
       }
     };
 
+   const fetchChannelDetails = async () => {
+    try {
+      const response = await api.get(`/users/c/${video.owner.username}`)
+        setChannelAvatar(response.data.data.avatar)
+       SetSubscriberCount(response.data.data.subscribersCount)
+       setIsSubscribed(response.data.data.isSubscribed)
+      console.log("Channel details : " , response.data.data)
+    } catch (error) {
+      toast.error(error)
+    }
+   }
+
     fetchVideoDetails();
     fetchComments();
     fetchLikes();
-  }, [id, user._id]);
+    fetchChannelDetails();
+  }, [id, user._id ,  video && video.owner.username]);
 
   const handleAddComment = async () => {
     try {
@@ -118,6 +141,24 @@ const VideoDetail = () => {
     }
   };
 
+  const toggleSubscription = async()=>{
+    try {
+      const response = await api.post(`/subscriptions/c/${video.owner._id}`);
+      console.log(" Subscription toggled : " , response.status)
+     
+      if(response.status === 200){
+       
+        const response = await api.get(`/users/c/${video.owner.username}`)
+   console.log("Subscriber count updated : " , response)
+       SetSubscriberCount(response.data.data.subscribersCount)
+       setIsSubscribed(response.data.data.isSubscribed)
+      console.log("Channel details : " , response.data.data)
+      }
+    } catch (error) {
+      toast.error(error)
+    }
+  }
+
   if (!video) {
     return <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">Loading video...</div>;
   }
@@ -152,7 +193,33 @@ const VideoDetail = () => {
                 style={{ aspectRatio: '16/9' }}
               ></video>
               <h2 className="text-2xl lg:text-3xl font-bold mb-2">{video.title}</h2>
-              <h3 className="text-lg lg:text-xl text-gray-400 mb-4">{video.owner.fullname}</h3>
+              <div className="flex items-center justify-between mb-4">
+  {/* Channel Info */}
+  <div className="flex items-center">
+    {/* Channel Avatar */}
+    {channelAvatar && (
+      <img
+        src={channelAvatar}
+        alt={`${video.owner.fullname}'s avatar`}
+        className="w-12 h-12 rounded-full mr-4"
+      />
+    )}
+    {/* Channel Name and Subscriber Count */}
+    <div>
+      <h3 className="text-lg lg:text-xl text-white font-semibold">{video.owner.username}</h3>
+      <p className="text-sm lg:text-base text-gray-400">{subscriberCount} subscribers</p>
+    </div>
+  </div>
+
+  {/* Subscribe Button */}
+  <button
+    onClick={toggleSubscription}
+    className={`px-4 py-2 rounded-lg font-semibold ${isSubscribed ? 'bg-gray-600 text-white' : 'bg-red-600 text-white'}`}
+  >
+    {isSubscribed ? 'Subscribed' : 'Subscribe'}
+  </button>
+</div>
+
               <p className="text-sm lg:text-base mb-4 leading-relaxed">{video.description}</p>
             </div>
           </div>
@@ -183,7 +250,7 @@ const VideoDetail = () => {
                   onClick={handleAddComment}
                   className="mt-2 px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition"
                 >
-                  Add Comment
+                  Comment
                 </button>
               </div>
 
