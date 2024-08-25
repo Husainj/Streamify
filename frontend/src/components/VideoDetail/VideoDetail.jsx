@@ -4,7 +4,9 @@ import { useSelector } from 'react-redux';
 import api from '../../services/api';
 import { ToastContainer, toast } from 'react-toastify';
 import Sidebar from '../Sidebar/Sidebar';
-import {Edit, Menu, Trash} from "lucide-react"
+import { Edit, Menu, Trash, Heart } from "lucide-react";
+import 'react-toastify/dist/ReactToastify.css';
+
 const VideoDetail = () => {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
@@ -22,11 +24,10 @@ const VideoDetail = () => {
     const fetchVideoDetails = async () => {
       try {
         const response = await api.get(`/videos/${id}`);
-        console.log("Videosssssss: " , response.data.data)
+        console.log("Video details : " , response.data.data)
         setVideo(response.data.data);
       } catch (error) {
         toast.error(error.response.data);
-        console.error('Error fetching video details:', error);
       }
     };
 
@@ -37,16 +38,25 @@ const VideoDetail = () => {
           ...comment,
           isOwner: comment.owner._id === user._id,
         }));
-
         setComments(commentsWithOwnership);
       } catch (error) {
         toast.error(error.response.data);
-        console.error('Error fetching comments:', error);
+      }
+    };
+
+    const fetchLikes = async () => {
+      try {
+        const response = await api.get(`likes/getLikes/${id}`);
+        setIsLiked(response.data.data.isLiked);
+        setLikes(response.data.data.likeCount);
+      } catch (error) {
+        toast.error(error.response.data);
       }
     };
 
     fetchVideoDetails();
     fetchComments();
+    fetchLikes();
   }, [id, user._id]);
 
   const handleAddComment = async () => {
@@ -65,7 +75,7 @@ const VideoDetail = () => {
       setNewComment('');
       toast.success('Comment added successfully');
     } catch (error) {
-      console.error('Error adding comment:', error);
+      toast.error(error.response.data);
     }
   };
 
@@ -82,7 +92,6 @@ const VideoDetail = () => {
       toast.success('Comment updated successfully');
     } catch (error) {
       toast.error(error.response.data);
-      console.error('Error updating comment:', error);
     }
   };
 
@@ -93,144 +102,160 @@ const VideoDetail = () => {
       setComments(comments.filter((comment) => comment._id !== commentId));
     } catch (error) {
       toast.error(error.response.data);
-      console.error('Error deleting comment:', error);
     }
   };
 
-  if (!user || !comments) {
-    return <div>Loading...</div>;
+  const toggleLike = async () => {
+    try {
+      const response = await api.post(`/likes/toggle/v/${id}`);
+      if (response.status === 200) {
+        const updatedLikes = await api.get(`likes/getLikes/${id}`);
+        setIsLiked(updatedLikes.data.data.isLiked);
+        setLikes(updatedLikes.data.data.likeCount);
+      }
+    } catch (error) {
+      toast.error(error.response.data);
+    }
+  };
+
+  if (!video) {
+    return <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">Loading video...</div>;
   }
 
   return (
-    <div className="flex bg-gray-900">
-      {/* Sidebar Component */}
+    <div className="flex bg-gray-900 min-h-screen">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-     
-      {/* Main Content */}
-      <div className={`flex-1 md:ml-40 p-4 bg-gray-900 text-white transition-all ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
-        {/* Hamburger Menu for Mobile */}
-        <button className="mr-4 lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            <Menu size={24} />
-          </button>
-          {isMenuOpen && (
-        <div className="mt-4 lg:hidden">
-          <nav>
-            <a href="/" className="block py-2">Home</a>
-            <a href="#" className="block py-2">Convo</a>
-            <a href="#" className="block py-2">Subscriptions</a>
-            <a href="#" className="block py-2">You</a>
-          </nav>
-        </div>
-      )}
+      <div className={`flex-1 md:ml-40 p-6 text-white transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
+        {/* Mobile Hamburger Menu */}
+        <button className="lg:hidden mb-4" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <Menu size={24} />
+        </button>
+        {isMenuOpen && (
+          <div className="lg:hidden mb-4">
+            <nav>
+              <a href="/" className="block py-2">Home</a>
+              <a href="#" className="block py-2">Convo</a>
+              <a href="#" className="block py-2">Subscriptions</a>
+              <a href="#" className="block py-2">You</a>
+            </nav>
+          </div>
+        )}
 
-        {video ? (
-          <>
-            <div className="video-container mb-4">
-              <video src={video.videoFile} controls className="w-full rounded-lg shadow-lg"></video>
+        <div className="flex flex-col lg:flex-row lg:space-x-8">
+          {/* Video Player and Info */}
+          <div className="lg:w-2/3">
+            <div className="video-container mb-6">
+              <video
+                src={video.videoFile}
+                controls
+                className="w-full rounded-lg shadow-lg mb-4"
+                style={{ aspectRatio: '16/9' }}
+              ></video>
+              <h2 className="text-2xl lg:text-3xl font-bold mb-2">{video.title}</h2>
+              <h3 className="text-lg lg:text-xl text-gray-400 mb-4">{video.owner.fullname}</h3>
+              <p className="text-sm lg:text-base mb-4 leading-relaxed">{video.description}</p>
             </div>
-            <h2 className="text-3xl font-bold mb-2">{video.title}</h2>
-            <h3 className="text-2xl font-bold mb-2">{video.owner.fullname}</h3>
-            <p className="mb-4">{video.description}</p>
-            <div className="mb-4 flex items-center">
+          </div>
+
+          {/* Like & Comments Section */}
+          <div className="lg:w-1/3">
+            <div className="mb-6">
               <button
-                className={`like-button ${isLiked ? 'text-blue-500' : 'text-white'}`}
-                disabled={isLiked}
+                className={`flex items-center space-x-2 ${isLiked ? 'text-red-500' : 'text-gray-400'}`}
+                onClick={toggleLike}
               >
-                👍 {likes} Likes
+                {isLiked ? "❤️" : "🤍"}  <span> {likes} Likes</span>
               </button>
             </div>
 
-            {/* Add Comment Section */}
-            <div className="comments-section mb-6">
-              <h3 className="text-xl font-semibold">Add a Comment</h3>
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment..."
-                className="w-full p-2 mt-2 bg-gray-800 rounded-lg mb-2"
-              />
-              <button
-                onClick={handleAddComment}
-                className="bg-blue-500 px-4 py-2 rounded-lg mb-4"
-              >
-                Add Comment
-              </button>
+            <div className="comments-section">
+              <h3 className="text-xl font-semibold mb-4">Comments</h3>
+
+              {/* Add Comment Section */}
+              <div className="mb-4">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  className="w-full p-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleAddComment}
+                  className="mt-2 px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                >
+                  Add Comment
+                </button>
+              </div>
 
               {/* Edit Comment Section */}
               {editingComment && (
                 <div className="mb-4">
-                  <h4 className="text-lg font-semibold">Edit Comment</h4>
                   <textarea
                     value={updatedCommentText}
                     onChange={(e) => setUpdatedCommentText(e.target.value)}
                     placeholder="Update your comment..."
-                    className="w-full p-2 mt-2 bg-gray-800 rounded-lg"
+                    className="w-full p-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <button
-                    onClick={() => handleUpdateComment(editingComment)}
-                    className="bg-blue-500 px-4 py-2 rounded-lg mt-2"
-                  >
-                    Update Comment
-                  </button>
-                  <button
-                    onClick={() => setEditingComment(null)}
-                    className="bg-red-500 px-4 py-2 rounded-lg mt-2"
-                  >
-                    Cancel
-                  </button>
+                  <div className="mt-2 flex space-x-2">
+                    <button
+                      onClick={() => handleUpdateComment(editingComment)}
+                      className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                    >
+                      Update
+                    </button>
+                    <button
+                      onClick={() => setEditingComment(null)}
+                      className="px-4 py-2 bg-red-500 rounded-lg hover:bg-red-600 transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               )}
-            </div>
 
-            {/* Display Comments */}
-            <div className="comments-section">
-              <h3 className="text-xl font-semibold">Comments</h3>
+              {/* Display Comments */}
               {comments.length > 0 ? (
                 comments.map((comment) => (
-                  <div key={comment._id} className="comment mt-2 p-2 bg-gray-800 rounded-lg flex items-start">
+                  <div key={comment._id} className="flex items-start mt-4 p-3 bg-gray-800 rounded-lg">
                     {comment.owner.avatar && (
                       <img
                         src={comment.owner.avatar}
                         alt={`${comment.owner.username}'s avatar`}
-                        className="w-10 h-10 rounded-full mr-2"
+                        className="w-10 h-10 rounded-full mr-3"
                       />
                     )}
-                    <div className="comment-content">
-                      <p className='break-words'>
+                    <div className="flex-1">
+                      <p className="text-sm lg:text-base break-words">
                         <strong>{comment.owner.username}</strong>: {comment.content}
                       </p>
                       {comment.isOwner && (
-                        <div className="mt-2 flex space-x-2">
-                          <Edit size={15} 
+                        <div className="mt-2 flex space-x-3">
+                          <Edit
+                            size={16}
                             onClick={() => {
                               setEditingComment(comment._id);
                               setUpdatedCommentText(comment.content);
                             }}
-                            className="text-blue-500"
-                          >
-                            Edit
-                          </Edit>
-                          <Trash size={15}
+                            className="text-blue-500 cursor-pointer hover:text-blue-600 transition"
+                          />
+                          <Trash
+                            size={16}
                             onClick={() => handleDeleteComment(comment._id)}
-                            className="text-red-500"
-                          >
-                            Delete
-                          </Trash>
+                            className="text-red-500 cursor-pointer hover:text-red-600 transition"
+                          />
                         </div>
                       )}
                     </div>
                   </div>
                 ))
               ) : (
-                <p>No comments yet.</p>
+                <p className="text-gray-400">No comments yet.</p>
               )}
             </div>
-          </>
-        ) : (
-          <p>Loading video...</p>
-        )}
-        <ToastContainer />
+          </div>
+        </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };
