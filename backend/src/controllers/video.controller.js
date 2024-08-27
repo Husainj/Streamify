@@ -36,7 +36,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
     try {
         // Find videos with filter, sort, and pagination
         const videos = await Video.find(filter)
-        .populate('owner',  'fullname')
+        .populate({
+            path: 'owner',  // Field in the Video model referencing the User model
+            select: 'fullname username'  // Fields you want to select from the User model
+        })
             .sort(sort)
             .skip(skip)
             .limit(limitNumber);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import api from '../../services/api';
 import { ToastContainer, toast } from 'react-toastify';
@@ -195,6 +195,7 @@ const VideoDetail = () => {
               <h2 className="text-2xl lg:text-3xl font-bold mb-2">{video.title}</h2>
               <div className="flex items-center justify-between mb-4">
   {/* Channel Info */}
+  <Link  to={`/channel/${video.owner.username}`} >
   <div className="flex items-center">
     {/* Channel Avatar */}
     {channelAvatar && (
@@ -210,7 +211,7 @@ const VideoDetail = () => {
       <p className="text-sm lg:text-base text-gray-400">{subscriberCount} subscribers</p>
     </div>
   </div>
-
+  </Link>
   {/* Subscribe Button */}
   <button
     onClick={toggleSubscription}
@@ -220,7 +221,7 @@ const VideoDetail = () => {
   </button>
 </div>
 
-              <p className="text-sm lg:text-base mb-4 leading-relaxed">{video.description}</p>
+              <p className="text-sm lg:text-base mb-4 leading-relaxed border-t-2 border-gray-700 pt-2">{video.description}</p>
             </div>
           </div>
 
@@ -236,7 +237,7 @@ const VideoDetail = () => {
             </div>
 
             <div className="comments-section">
-              <h3 className="text-xl font-semibold mb-4">Comments</h3>
+              <h3 className="text-xl font-semibold mb-4 border-b-2 border-gray-700 pb-2">Comments</h3>
 
               {/* Add Comment Section */}
               <div className="mb-4">

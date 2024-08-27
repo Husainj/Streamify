@@ -9,6 +9,7 @@ import {setUser, clearUser} from './redux/slices/authSlice'
 import api from './services/api'
 import Studio from './pages/Studio';
 import VideoDetail from './components/VideoDetail/VideoDetail';
+import ChannelPage from './pages/ChannelPage';
 function App() {
   const dispatch = useDispatch();
 
@@ -43,6 +44,7 @@ function App() {
         <Route path='/dashboard' element={<Dashboard />} />
         <Route path="/studio" element={<Studio />} />
         <Route path="/videos/:id" element={<VideoDetail />} />
+        <Route path="/channel/:username" element={<ChannelPage />} />
   </Routes>
    </>
   )

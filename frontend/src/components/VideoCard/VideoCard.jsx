@@ -21,7 +21,7 @@ const VideoCard = ({ video }) => {
       </div>
       <div className="p-2">
         <h4 className="font-bold text-white">{video.title}</h4>
-        <p className="text-gray-400">{video.owner?.fullname || 'Unknown Creator'}</p>
+        <p className="text-gray-400">{video.owner?.username || 'Unknown Creator'}</p>
         <p className="text-gray-400">Views : {video.views}</p>
       </div>
     </div>
