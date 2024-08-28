@@ -42,15 +42,35 @@ const getVideoLikes = asyncHandler(async (req, res) => {
     // Get the count of likes for the video
     const likeCount = await Like.countDocuments({ video: videoId });
 
+    // Initialize isLiked to false by default
+    let isLiked = false;
+
     // Check if the current user has liked the video
-    if(req.user){
-    const userLike = await Like.findOne({ video: videoId, likedBy: req.user._id });
-    return res.status(200).json(
-        new ApiResponse(200, { likeCount, isLiked: !!userLike }, "Likes count fetched successfully")
-    );
+    if (req.user) {
+        const userLike = await Like.findOne({ video: videoId, likedBy: req.user._id });
+        if (userLike) {
+            isLiked = true;
+        }
     }
+
     return res.status(200).json(
-        new ApiResponse(200, { likeCount, isLiked: false }, "Likes count fetched successfully")
+        new ApiResponse(200, { likeCount, isLiked }, "Likes count fetched successfully")
+    );
+});
+
+const getVideoLikesUnauth = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid Video ID");
+    }
+
+    const likeCount = await Like.countDocuments({ video: videoId });
+
+    let isLiked = false;
+
+    return res.status(200).json(
+        new ApiResponse(200, { likeCount, isLiked }, "Likes count fetched successfully")
     );
 });
 
@@ -155,5 +175,6 @@ export {
     toggleTweetLike,
     toggleVideoLike,
     getLikedVideos,
-    getVideoLikes
+    getVideoLikes,
+    getVideoLikesUnauth
 }

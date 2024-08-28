@@ -5,6 +5,7 @@ import { Menu } from "lucide-react";
 import api from "../services/api";
 import { ToastContainer, toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 const ChannelPage = () => {
   const { username } = useParams();
   const [channel, setChannel] = useState(null);
@@ -14,14 +15,28 @@ const ChannelPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [videos, setVideos] = useState([]);
 
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn)
   useEffect(() => {
     const fetchChannelDetails = async () => {
       try {
-        const response = await api.get(`/users/c/${username}`);
+        if(isLoggedIn){
+          const response = await api.get(`/users/c/${username}`);
         console.log("Channel details:", response.data.data);
         setChannel(response.data.data);
         setSubscriberCount(response.data.data.subscribersCount);
+        console.log("Is subscribed ?? : " ,response.data.data.isSubscribed )
         setIsSubscribed(response.data.data.isSubscribed);
+        }
+        else{
+
+        
+        const response = await api.get(`/users/c/u/${username}`);
+        console.log("Channel details:", response.data.data);
+        setChannel(response.data.data);
+        setSubscriberCount(response.data.data.subscribersCount);
+        console.log("Is subscribed ?? : " ,response.data.data.isSubscribed )
+        setIsSubscribed(response.data.data.isSubscribed);
+      }
       } catch (error) {
         toast.error(error.message || "Failed to fetch channel details");
       }

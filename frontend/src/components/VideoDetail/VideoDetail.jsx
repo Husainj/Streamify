@@ -28,7 +28,8 @@ const VideoDetail = () => {
 
 
   const navigate = useNavigate();
-  const user = useSelector((state) => state.auth.user);
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const user = useSelector((state)=>state.auth.user)
 
   useEffect(() => {
     const fetchVideoDetails = async () => {
@@ -56,12 +57,19 @@ const VideoDetail = () => {
 
     const fetchLikes = async () => {
       try {
-        const response = await api.get(`likes/getLikes/${id}`);
-    
-        setLikes(response.data.data.likeCount);
-     
-        setIsLiked(response.data.data.isLiked);
+        console.log("is logged in : " ,isLoggedIn)
+        if(isLoggedIn){
+          const response = await api.get(`/likes/getLikes/${id}`);
+          setLikes(response.data.data.likeCount);
+          setIsLiked(response.data.data.isLiked);
+       
+        }
+        else{
+          const response = await api.get(`/likes/getLikes/u/${id}`)
+          setLikes(response.data.data.likeCount);
+          setIsLiked(response.data.data.isLiked);
         
+        }
       } catch (error) {
         toast.error(error.response.data);
       }
@@ -69,11 +77,22 @@ const VideoDetail = () => {
 
    const fetchChannelDetails = async () => {
     try {
-      const response = await api.get(`/users/c/${video.owner.username}`)
+      if(isLoggedIn){
+        const response = await api.get(`/users/c/${video.owner.username}`)
         setChannelAvatar(response.data.data.avatar)
        SetSubscriberCount(response.data.data.subscribersCount)
+       console.log("Is subscribed : " , response.data.data.isSubscribed)
        setIsSubscribed(response.data.data.isSubscribed)
       console.log("Channel details : " , response.data.data)
+      }else{
+        const response = await api.get(`/users/c/u/${video.owner.username}`)
+        setChannelAvatar(response.data.data.avatar)
+       SetSubscriberCount(response.data.data.subscribersCount)
+       console.log("Is subscribed : " , response.data.data.isSubscribed)
+       setIsSubscribed(response.data.data.isSubscribed)
+      console.log("Channel details : " , response.data.data)
+      }
+     
     } catch (error) {
       toast.error(error)
     }
@@ -140,6 +159,7 @@ const VideoDetail = () => {
       const response = await api.post(`/likes/toggle/v/${id}`);
       if (response.status === 200) {
         const updatedLikes = await api.get(`likes/getLikes/${id}`);
+        console.log("Likes updated resposne : ",updatedLikes)
         setIsLiked(updatedLikes.data.data.isLiked);
         setLikes(updatedLikes.data.data.likeCount);
       }
