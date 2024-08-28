@@ -43,10 +43,14 @@ const getVideoLikes = asyncHandler(async (req, res) => {
     const likeCount = await Like.countDocuments({ video: videoId });
 
     // Check if the current user has liked the video
+    if(req.user){
     const userLike = await Like.findOne({ video: videoId, likedBy: req.user._id });
-
     return res.status(200).json(
         new ApiResponse(200, { likeCount, isLiked: !!userLike }, "Likes count fetched successfully")
+    );
+    }
+    return res.status(200).json(
+        new ApiResponse(200, { likeCount, isLiked: false }, "Likes count fetched successfully")
     );
 });
 

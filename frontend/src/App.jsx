@@ -38,7 +38,7 @@ function App() {
 
   return (
    <>
-   {/* <LandingPage /> */}
+ 
   <Routes>
         <Route path='/' element={<LandingPage/>} />
         <Route path='/dashboard' element={<Dashboard />} />

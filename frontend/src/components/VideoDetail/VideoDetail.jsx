@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams ,useNavigate  } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import api from '../../services/api';
 import { ToastContainer, toast } from 'react-toastify';
 import Sidebar from '../Sidebar/Sidebar';
-import { Edit, Menu, Trash, Heart } from "lucide-react";
+import { Edit, Menu, Trash, Heart , Home, Upload, Settings, LogOut } from "lucide-react";
 import 'react-toastify/dist/ReactToastify.css';
 
 const VideoDetail = () => {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
-
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [editingComment, setEditingComment] = useState(null);
@@ -27,7 +27,7 @@ const VideoDetail = () => {
   const [subscriberCount , SetSubscriberCount] = useState(0)
 
 
-
+  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
@@ -57,8 +57,11 @@ const VideoDetail = () => {
     const fetchLikes = async () => {
       try {
         const response = await api.get(`likes/getLikes/${id}`);
-        setIsLiked(response.data.data.isLiked);
+    
         setLikes(response.data.data.likeCount);
+     
+        setIsLiked(response.data.data.isLiked);
+        
       } catch (error) {
         toast.error(error.response.data);
       }
@@ -98,7 +101,11 @@ const VideoDetail = () => {
       setNewComment('');
       toast.success('Comment added successfully');
     } catch (error) {
-      toast.error(error.response.data);
+    
+      if(error.response.status === 420) {
+        toast.error("Please Login!");
+      }
+      console.log(error)
     }
   };
 
@@ -137,7 +144,10 @@ const VideoDetail = () => {
         setLikes(updatedLikes.data.data.likeCount);
       }
     } catch (error) {
-      toast.error(error.response.data);
+      if(error.response.status === 420) {
+        toast.error("Please Login!");
+      }
+      console.log(error)
     }
   };
 
@@ -155,32 +165,66 @@ const VideoDetail = () => {
       console.log("Channel details : " , response.data.data)
       }
     } catch (error) {
-      toast.error(error)
+      if(error.response.status === 420) {
+        toast.error("Please Login!");
+      }
+      console.log(error)
     }
   }
 
   if (!video) {
     return <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">Loading video...</div>;
   }
+  const handleNavigation = (path) => {
+    navigate(path);
+    setIsMobileMenuOpen(false);
+  };
+
+  const MobileMenu = () => (
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex flex-col items-center justify-center">
+      <button onClick={toggleMobileMenu} className="absolute top-4 right-4 text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      <nav className="flex flex-col items-center space-y-6">
+        <button onClick={() => handleNavigation('/')} className="flex items-center text-white text-xl">
+          <Home className="mr-2" size={24} /> Home
+        </button>
+        <button onClick={() => handleNavigation('/#')} className="flex items-center text-white text-xl">
+          <Upload className="mr-2" size={24} /> Convo
+        </button>
+        <button onClick={() => handleNavigation('/#')} className="flex items-center text-white text-xl">
+          <Settings className="mr-2" size={24} /> Subscriptions
+        </button>
+        <button onClick={() => handleNavigation('/#')} className="flex items-center text-white text-xl">
+          <LogOut className="mr-2" size={24} /> You
+        </button>
+      </nav>
+    </div>
+  );
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
 
   return (
     <div className="flex bg-gray-900 min-h-screen">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <div className={`flex-1 md:ml-40 p-6 text-white transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
         {/* Mobile Hamburger Menu */}
-        <button className="lg:hidden mb-4" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          <Menu size={24} />
-        </button>
-        {isMenuOpen && (
-          <div className="lg:hidden mb-4">
-            <nav>
-              <a href="/" className="block py-2">Home</a>
-              <a href="#" className="block py-2">Convo</a>
-              <a href="#" className="block py-2">Subscriptions</a>
-              <a href="#" className="block py-2">You</a>
-            </nav>
-          </div>
-        )}
+        <div className="md:hidden fixed top-0 left-0 z-50 p-4">
+          <button
+            onClick={toggleMobileMenu}
+            className="text-white focus:outline-none"
+          >
+            <Menu size={24} />
+          </button>
+        </div>
+
+        {isMobileMenuOpen && <MobileMenu />}
+
 
         <div className="flex flex-col lg:flex-row lg:space-x-8">
           {/* Video Player and Info */}

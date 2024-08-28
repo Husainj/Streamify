@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {  clearUser} from '../../redux/slices/authSlice'// Import your logout action
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -72,7 +73,7 @@ const Header = () => {
             <Menu size={24} />
           </button>
           <div className="flex items-center md:mr-40">
-            <span className="text-xl font-bold">Vidflix {isItLoggedIn ? 'Logged In' : 'Logged Out'} {console.log("User id : " , user._id )}</span>
+            <span className="text-xl font-bold">Vidflix{console.log("User id : " , user._id )}</span>
           </div>
         </div>
 
@@ -97,11 +98,14 @@ const Header = () => {
               </button>
               <button className="p-2 relative" onClick={toggleDropdown}>
                 {user.avatar ? (
+                  <div className='flex flex-row gap-2'>
                   <img
                     src={user.avatar}
                     alt="User Avatar"
                     className="w-8 h-8 rounded-full"
                   />
+                  <div className='mt-1 font-bold hidden md:block'>{user.fullname}</div>
+                  </div>
                 ) : (
                   <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
                 )}
@@ -127,7 +131,10 @@ const Header = () => {
       </div>
 
       {/* Mobile search bar */}
-      <div className="mt-4 md:hidden">
+      <div className="mt-4 md:hidden flex-col ">
+        <div className='items-center text-center font-bold mb-1'>
+          Hiii, {user.fullname} 👋
+        </div>
         <div className="flex items-center">
           <input
             type="text"
@@ -137,6 +144,7 @@ const Header = () => {
           <button className="bg-gray-700 px-4 py-2.5 rounded-r-full">
             <Search size={20} />
           </button>
+       
         </div>
       </div>
 

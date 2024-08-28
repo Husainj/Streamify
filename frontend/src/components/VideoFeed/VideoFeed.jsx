@@ -29,7 +29,7 @@ const VideoFeed = () => {
           <Sidebar />
         </div>
 
-        <div className="p-4 md:ml-11 flex flex-wrap justify-center lg:justify-start overflow-y-auto flex-1">
+        <div className="p-4 md:ml-11 md:mt-0 mt-20 flex flex-wrap justify-center lg:justify-start overflow-y-auto flex-1">
           {videos.length > 0 ? (
             videos.map((video) => (
               <div key={video._id} className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4">
