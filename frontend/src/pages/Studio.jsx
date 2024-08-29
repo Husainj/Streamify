@@ -5,7 +5,7 @@ import VideoCardStudio from '../components/VideoCardStudio/VideoCardStudio'; // 
 import api from '../services/api'; // Adjust the path as necessary
 import Loading from '../components/Loading/Loading'; // Import the Loading component
 import axios from 'axios';
-
+import { useSelector } from 'react-redux';
 const Studio = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false); // Add state for edit modal
@@ -16,11 +16,11 @@ const Studio = () => {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState(null); // State for current video ID
-
+const user = useSelector((state)=>state.auth.user)
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const response = await api.get('/dashboard/videos');
+        const response = await api.get(`/dashboard/videos/${user._id}`);
         console.log('Fetched Videos:', response.data.data);
         setVideos(response.data.data);
       } catch (error) {
@@ -29,7 +29,7 @@ const Studio = () => {
     };
 
     fetchVideos();
-  }, []);
+  }, [user , user._id]);
 
   const toggleUploadModal = () => setShowUploadModal(!showUploadModal);
 
