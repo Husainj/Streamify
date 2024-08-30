@@ -10,6 +10,8 @@ import api from './services/api'
 import Studio from './pages/Studio';
 import VideoDetail from './components/VideoDetail/VideoDetail';
 import ChannelPage from './pages/ChannelPage';
+import Subscriptions from './pages/Subscriptions';
+import SearchResultsPage from './pages/SearchResultsPage';
 function App() {
   const dispatch = useDispatch();
 
@@ -45,6 +47,8 @@ function App() {
         <Route path="/studio" element={<Studio />} />
         <Route path="/videos/:id" element={<VideoDetail />} />
         <Route path="/channel/:username" element={<ChannelPage />} />
+        <Route path="/m/subscriptions" element={<Subscriptions />} />
+        <Route path="/search" element={<SearchResultsPage />} />
   </Routes>
    </>
   )

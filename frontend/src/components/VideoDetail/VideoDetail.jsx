@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import Sidebar from '../Sidebar/Sidebar';
 import { Edit, Menu, Trash, Heart , Home, Upload, Settings, LogOut } from "lucide-react";
 import 'react-toastify/dist/ReactToastify.css';
-
+import MobileMenu from '../MobileMenu/MobileMenu';
 const VideoDetail = () => {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
@@ -20,7 +20,7 @@ const VideoDetail = () => {
   const [isLiked, setIsLiked] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+ 
 
   const [isSubscribed , setIsSubscribed] = useState(false)
   const [channelAvatar , setChannelAvatar] = useState(null)
@@ -195,35 +195,12 @@ const VideoDetail = () => {
   if (!video) {
     return <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">Loading video...</div>;
   }
+ 
+
+  
   const handleNavigation = (path) => {
     navigate(path);
-    setIsMobileMenuOpen(false);
   };
-
-  const MobileMenu = () => (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex flex-col items-center justify-center">
-      <button onClick={toggleMobileMenu} className="absolute top-4 right-4 text-white">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-      <nav className="flex flex-col items-center space-y-6">
-        <button onClick={() => handleNavigation('/')} className="flex items-center text-white text-xl">
-          <Home className="mr-2" size={24} /> Home
-        </button>
-        <button onClick={() => handleNavigation('/#')} className="flex items-center text-white text-xl">
-          <Upload className="mr-2" size={24} /> Convo
-        </button>
-        <button onClick={() => handleNavigation('/#')} className="flex items-center text-white text-xl">
-          <Settings className="mr-2" size={24} /> Subscriptions
-        </button>
-        <button onClick={() => handleNavigation('/#')} className="flex items-center text-white text-xl">
-          <LogOut className="mr-2" size={24} /> You
-        </button>
-      </nav>
-    </div>
-  );
-
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -243,8 +220,12 @@ const VideoDetail = () => {
           </button>
         </div>
 
-        {isMobileMenuOpen && <MobileMenu />}
-
+        {isMobileMenuOpen && (
+        <MobileMenu
+          onClose={() => setIsMobileMenuOpen(false)}
+          onNavigate={handleNavigation}
+        />
+      )}
 
         <div className="flex flex-col lg:flex-row lg:space-x-8">
           {/* Video Player and Info */}

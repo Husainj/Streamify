@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
-import { Edit2, Users, ThumbsUp, Video, Eye, Menu, Home, Upload, Settings, LogOut, Save } from 'lucide-react';
+import { Edit2, Users, ThumbsUp, Video, Eye, Menu, Home, Upload, Settings, LogOut, Save , X} from 'lucide-react';
 import api from '../services/api';
 import Sidebar from '../components/Sidebar/Sidebar';
-
+import MobileMenu from '../components/MobileMenu/MobileMenu';
 const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const [videos, setVideos] = useState([]);
   const [stats, setStats] = useState({
     likes: 0,
@@ -31,6 +32,10 @@ const Dashboard = () => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   
+  const [showSubscribersModal, setShowSubscribersModal] = useState(false);
+  const [subscribers, setSubscribers] = useState([]);
+  const [isLoadingSubscribers, setIsLoadingSubscribers] = useState(false);
+
   const avatarInputRef = useRef(null);
   const coverImageInputRef = useRef(null);
 
@@ -115,14 +120,15 @@ const Dashboard = () => {
     }
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+ 
+    const handleNavigation = (path) => {
+      navigate(path);
+    };
+    const toggleMobileMenu = () => {
+      setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+  
 
-  const handleNavigation = (path) => {
-    navigate(path);
-    setIsMobileMenuOpen(false);
-  };
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
@@ -179,35 +185,57 @@ const Dashboard = () => {
       setIsUploadingCover(false);
     }
   };
-  const MobileMenu = () => (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex flex-col items-center justify-center">
-      <button onClick={toggleMobileMenu} className="absolute top-4 right-4 text-white">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-      <nav className="flex flex-col items-center space-y-6">
-        <button onClick={() => handleNavigation('/')} className="flex items-center text-white text-xl">
-          <Home className="mr-2" size={24} /> Home
-        </button>
-        <button onClick={() => handleNavigation('/upload')} className="flex items-center text-white text-xl">
-          <Upload className="mr-2" size={24} /> Upload
-        </button>
-        <button onClick={() => handleNavigation('/settings')} className="flex items-center text-white text-xl">
-          <Settings className="mr-2" size={24} /> Settings
-        </button>
-        <button onClick={() => handleNavigation('/logout')} className="flex items-center text-white text-xl">
-          <LogOut className="mr-2" size={24} /> Logout
-        </button>
-      </nav>
+
+  const fetchSubscribers = async () => {
+    setIsLoadingSubscribers(true);
+    try {
+      const response = await api.get(`/subscriptions/c/${profile.channelId}`);
+      console.log("Subscribers : " , response.data.data)
+      setSubscribers(response.data.data || []);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to fetch subscribers");
+    } finally {
+      setIsLoadingSubscribers(false);
+    }
+  };
+
+  const handleOpenSubscribersModal = () => {
+    setShowSubscribersModal(true);
+    fetchSubscribers();
+  };
+
+  const SubscribersModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Subscribers</h2>
+          <button onClick={() => setShowSubscribersModal(false)} className="text-gray-400 hover:text-white">
+            <X size={24} />
+          </button>
+        </div>
+        {isLoadingSubscribers ? (
+          <p className="text-center">Loading subscribers...</p>
+        ) : subscribers.length > 0 ? (
+          <ul className="space-y-4">
+            {subscribers.map((subscriber) => (
+              <li key={subscriber.subscriber._id} className="flex items-center space-x-3">
+                <img src={subscriber.subscriber.avatar} alt={subscriber.subscriber.fullname} className="w-10 h-10 rounded-full" />
+                <span>{subscriber.subscriber.fullname}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-center">No subscribers yet.</p>
+        )}
+      </div>
     </div>
-  );
+  );  
 
   return (
-     <div className="flex bg-gray-900 text-white min-h-screen">
-      <Sidebar />
+    <div className="flex bg-gray-900 text-white min-h-screen">
+    <Sidebar />
 
-      <div className="flex-1">
+    <div className="flex-1">
         {/* Hamburger menu for mobile */}
         <div className="md:hidden fixed top-0 left-0 z-50 p-4">
           <button
@@ -218,10 +246,14 @@ const Dashboard = () => {
           </button>
         </div>
 
-        {isMobileMenuOpen && <MobileMenu />}
+        {isMobileMenuOpen && (
+        <MobileMenu
+          onClose={() => setIsMobileMenuOpen(false)}
+          onNavigate={handleNavigation}
+        />
+      )}
 
         <div className="p-6 mt-12 md:mt-0 md:ml-[8rem]">
-     
           <div className="relative w-full h-60 bg-cover bg-center mb-4 rounded-lg overflow-hidden" 
                style={{ backgroundImage: `url(${profile.coverImage})` }}>
             <input
@@ -244,8 +276,8 @@ const Dashboard = () => {
             </button>
           </div>
 
-          <div className="flex flex-col md:flex-row items-start md:items-center mb-8 space-y-4 md:space-y-0 md:space-x-4">
-            <div className="relative">
+          <div className="flex flex-row items-start space-x-4 mb-8">
+            <div className="relative flex-shrink-0">
               <img src={profile.avatar} alt={profile.username} className="w-24 h-24 rounded-full" />
               <input
                 type="file"
@@ -266,8 +298,8 @@ const Dashboard = () => {
                 )}
               </button>
             </div>
-       
-            <div className="flex-1">
+
+            <div className="flex-grow">
               {isEditing ? (
                 <div className="space-y-2">
                   <input
@@ -296,7 +328,7 @@ const Dashboard = () => {
               ) : (
                 <>
                   <div className="flex items-center space-x-2">
-                    <h1 className="text-3xl font-bold">{profile.fullname}</h1>
+                    <h1 className="text-2xl font-bold">{profile.fullname}</h1>
                     <button 
                       onClick={handleEdit}
                       className="text-white bg-transparent hover:bg-gray-700 p-1 rounded"
@@ -304,22 +336,20 @@ const Dashboard = () => {
                       <Edit2 className="h-4 w-4" />
                     </button>
                   </div>
-                  <p className="text-xl text-gray-400">@{profile.username}</p>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <p className="text-gray-400">{profile.email}</p>
-                  </div>
+                  <p className="text-lg text-gray-400">@{profile.username}</p>
+                  <p className="text-sm text-gray-400 mt-1">{profile.email}</p>
                 </>
               )}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gray-800 p-4 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Subscribers</span>
-                <Users className="h-4 w-4 text-gray-400" />
-              </div>
-              <div className="text-2xl font-bold">{stats.subscribers}</div>
+          <div className="bg-gray-800 p-4 rounded-lg cursor-pointer" onClick={handleOpenSubscribersModal}>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">Subscribers</span>
+              <Users className="h-4 w-4 text-gray-400" />
             </div>
+            <div className="text-2xl font-bold">{stats.subscribers}</div>
+          </div>
             <div className="bg-gray-800 p-4 rounded-lg">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium">Total Likes</span>
@@ -373,6 +403,7 @@ const Dashboard = () => {
 </div>
 
         </div>
+        {showSubscribersModal && <SubscribersModal />}
       </div>
 
       <ToastContainer />

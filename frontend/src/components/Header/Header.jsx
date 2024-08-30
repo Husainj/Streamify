@@ -6,12 +6,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import {  clearUser} from '../../redux/slices/authSlice'// Import your logout action
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import MobileMenu from '../MobileMenu/MobileMenu';
+import VideoSearchBar from '../VideoSearchBar/VideoSearchBar';
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -64,12 +67,20 @@ const Header = () => {
     };
   }, []);
 
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+
   return (
     <header className="bg-black text-white p-4 fixed top-0 left-0 right-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo and menu button */}
         <div className="flex items-center">
-          <button className="mr-4 lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+        <button className="mr-4 lg:hidden" onClick={toggleMobileMenu}>
             <Menu size={24} />
           </button>
           <div className="flex items-center md:mr-40">
@@ -78,17 +89,9 @@ const Header = () => {
         </div>
 
         {/* Search bar */}
-        <div className="hidden md:flex items-center flex-grow mx-4">
-          <input
-            type="text"
-            placeholder="Search"
-            className="w-full px-4 py-2 bg-gray-800 rounded-l-full focus:outline-none"
-          />
-          <button className="bg-gray-700 px-4 py-2.5 rounded-r-full">
-            <Search size={20} />
-          </button>
-        </div>
-
+     <div className='flex-grow hidden md:block'>
+        <VideoSearchBar />
+      </div>
         {/* Icons */}
         <div className="flex items-center md:ml-40 relative">
           {isItLoggedIn ? (
@@ -131,33 +134,17 @@ const Header = () => {
       </div>
 
       {/* Mobile search bar */}
-      <div className="mt-4 md:hidden flex-col ">
-        <div className='items-center text-center font-bold mb-1'>
-          Hiii, {user.fullname} 👋
-        </div>
-        <div className="flex items-center">
-          <input
-            type="text"
-            placeholder="Search"
-            className="w-full px-4 py-2 bg-gray-800 rounded-l-full focus:outline-none"
-          />
-          <button className="bg-gray-700 px-4 py-2.5 rounded-r-full">
-            <Search size={20} />
-          </button>
-       
-        </div>
+      <div className='md:hidden'>
+        <VideoSearchBar />
       </div>
-
+   
+   
       {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="mt-4 lg:hidden">
-          <nav>
-            <a href="#" className="block py-2">Home</a>
-            <a href="#" className="block py-2">Convo</a>
-            <a href="#" className="block py-2">Subscriptions</a>
-            <a href="#" className="block py-2">You</a>
-          </nav>
-        </div>
+      {isMobileMenuOpen && (
+        <MobileMenu
+          onClose={() => setIsMobileMenuOpen(false)}
+          onNavigate={handleNavigation}
+        />
       )}
 
       {/* For login and register Modal */}

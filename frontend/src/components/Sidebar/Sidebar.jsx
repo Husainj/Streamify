@@ -1,20 +1,42 @@
-// Sidebar.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import api from '../../services/api';
+import { useSelector } from 'react-redux';
 const Sidebar = () => {
   const navigate = useNavigate();
-const navigateToHome = () =>{
-  navigate('/')
-}
+  const [subscriptions, setSubscriptions] = useState([]);
+const user = useSelector((state)=>state.auth.user)
+const isLoggedIn = useSelector((state)=>state.auth.isLoggedIn)
+  // Function to fetch subscribed channels
+  const fetchSubscribedChannels = async () => {
+    try {
+      const response = await api.get(`/subscriptions/u/${user._id}`); // Replace with your actual API endpoint
+      console.log(" Subscribed channels fetched :" , response.data.data)
+      setSubscriptions(response.data.data);
+    } catch (error) {
+      console.error('Error fetching subscriptions:', error);
+    }
+  };
 
-const handleDashboardClick =()=>{
-  navigate('/dashboard')
-}
+  useEffect(() => {
+    fetchSubscribedChannels();
+  }, [user._id , isLoggedIn]); // Empty dependency array ensures this runs once on mount
+
+  const navigateToHome = () => {
+    navigate('/');
+  };
+
+  const handleDashboardClick = () => {
+    navigate('/dashboard');
+  };
+
+  const handleChannelClick = (username) => {
+    navigate(`/channel/${username}`);
+  };
+
   return (
-    <div className="fixed left-0 h-full w-fit bg-gray-800 text-white p-4 border-r border-gray-700 hidden md:block">
+    <div className="fixed left-0 h-full w-fit bg-gray-800 text-white p-4 border-r border-gray-700 hidden md:block overflow-y-auto">
       <div className="mb-4">
-    
         <ul>
           <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md" onClick={navigateToHome}>
             <svg
@@ -50,24 +72,7 @@ const handleDashboardClick =()=>{
             </svg>
             <span className="mt-2">Convo</span>
           </li>
-          <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span className="mt-2">Subscriptions</span>
-          </li>
-          <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md" onClick={handleDashboardClick} >
+          <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md" onClick={handleDashboardClick}>
             <svg
               className="w-6 h-6"
               fill="none"
@@ -84,6 +89,25 @@ const handleDashboardClick =()=>{
             </svg>
             <span className="mt-2">You</span>
           </li>
+        </ul>
+      </div>
+      <div className="mt-4">
+        <h2 className="text-lg mb-2 border-b-2 border-gray-500 ">Subscriptions</h2>
+        <ul>
+          {subscriptions.length > 0 ? (
+            subscriptions.map((channel) => (
+              <li key={channel.channels.id} onClick={() => handleChannelClick(channel.channels.username)} className="flex items-center py-2 hover:bg-gray-700 rounded-md cursor-pointer">
+                <img
+                  src={channel.channels.avatar}
+                  alt={channel.channels.username}
+                  className="w-8 h-8 rounded-full mr-3"
+                />
+                <span className='truncate max-w-[59px]'>{channel.channels.username}</span>
+              </li>
+            ))
+          ) : (
+            <li className="text-gray-500 text-center">!</li>
+          )}
         </ul>
       </div>
     </div>
