@@ -2,7 +2,7 @@
 import './App.css'
 import LandingPage from './pages/LandingPage'
 import Dashboard from './pages/Dashboard'
-import {Route , Routes} from 'react-router-dom'
+import {Route , Routes , Navigate , useLocation} from 'react-router-dom'
 import React, { useEffect } from 'react';
 import { useDispatch , useSelector } from 'react-redux';
 import {setUser, clearUser} from './redux/slices/authSlice'
@@ -12,6 +12,24 @@ import VideoDetail from './components/VideoDetail/VideoDetail';
 import ChannelPage from './pages/ChannelPage';
 import Subscriptions from './pages/Subscriptions';
 import SearchResultsPage from './pages/SearchResultsPage';
+import { toast ,ToastContainer } from 'react-toastify';
+const ProtectedRoute = ({ children }) => {
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const location = useLocation();
+  
+  useEffect(() => {
+    if (!isLoggedIn) {
+      toast.error("Please login to access this page");
+    }
+  }, [isLoggedIn, location]);
+
+  if (!isLoggedIn) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 function App() {
   const dispatch = useDispatch();
 
@@ -40,16 +58,31 @@ function App() {
 
   return (
    <>
- 
-  <Routes>
-        <Route path='/' element={<LandingPage/>} />
-        <Route path='/dashboard' element={<Dashboard />} />
-        <Route path="/studio" element={<Studio />} />
+       <ToastContainer />
+ <Routes>
+        <Route path='/' element={<LandingPage />} />
         <Route path="/videos/:id" element={<VideoDetail />} />
         <Route path="/channel/:username" element={<ChannelPage />} />
-        <Route path="/m/subscriptions" element={<Subscriptions />} />
         <Route path="/search" element={<SearchResultsPage />} />
-  </Routes>
+        
+        {/* Protected Routes */}
+        <Route path='/dashboard' element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/studio" element={
+          <ProtectedRoute>
+            <Studio />
+          </ProtectedRoute>
+        } />
+        <Route path="/m/subscriptions" element={
+          <ProtectedRoute>
+            <Subscriptions />
+          </ProtectedRoute>
+        } />
+      </Routes>
+
    </>
   )
 }

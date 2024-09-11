@@ -88,10 +88,13 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Search bar */}
+
+        {/* Search bar */} 
      <div className='flex-grow hidden md:block'>
         <VideoSearchBar />
       </div>
+
+     
         {/* Icons */}
         <div className="flex items-center md:ml-40 relative">
           {isItLoggedIn ? (
@@ -135,6 +138,11 @@ const Header = () => {
 
       {/* Mobile search bar */}
       <div className='md:hidden'>
+      {isItLoggedIn && (
+          <div className="items-center md:hidden text-center font-bold mb-1">
+          Hiii, {user.fullname} 👋
+        </div>
+      )}
         <VideoSearchBar />
       </div>
    
