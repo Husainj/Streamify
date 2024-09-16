@@ -13,6 +13,7 @@ import ChannelPage from './pages/ChannelPage';
 import Subscriptions from './pages/Subscriptions';
 import SearchResultsPage from './pages/SearchResultsPage';
 import { toast ,ToastContainer } from 'react-toastify';
+import EmailVerification from './components/EmailVerification/EmailVerification';
 const ProtectedRoute = ({ children }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const location = useLocation();
@@ -64,7 +65,7 @@ function App() {
         <Route path="/videos/:id" element={<VideoDetail />} />
         <Route path="/channel/:username" element={<ChannelPage />} />
         <Route path="/search" element={<SearchResultsPage />} />
-        
+        <Route path="/verify-email/:token" element={<EmailVerification />}/>
         {/* Protected Routes */}
         <Route path='/dashboard' element={
           <ProtectedRoute>

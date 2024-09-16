@@ -45,7 +45,13 @@ const userSchema = new Schema(
         },
         refreshToken :{
             type: String
-        }
+        },
+        isVerified: {
+            type: Boolean,
+            default: false
+        },
+        verificationToken: String,
+        verificationTokenExpires: Date
     },
     {
         timestamps:true
@@ -94,6 +100,17 @@ userSchema.methods.generateRefreshToken = function(){
     )
 }
 
+userSchema.methods.generateVerificationToken = function() {
+    return jwt.sign(
+        {
+            _id: this._id,
+        },
+        process.env.VERIFICATION_TOKEN_SECRET,
+        {
+            expiresIn: '1d' 
+        }
+    )
+}
 
 
 export const User = mongoose.model("User" , userSchema);

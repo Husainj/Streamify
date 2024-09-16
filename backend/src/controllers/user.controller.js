@@ -6,6 +6,16 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import fs from "fs"
 import mongoose from "mongoose";
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+
+  service: 'gmail',
+  auth: {
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD
+  }
+});
 
 const generateAccessAndRefereshTokens = async (userId) => {
   try {
@@ -56,6 +66,9 @@ const registerUser = asyncHandler(async (req, res) => {
   //we cant check for coverimage like this because this code means that we are expecting to get an array from req.files
   //coverimage , but when nothing is present then undefined error will come.
   // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  if (!avatarLocalPath) {
+    throw new ApiError(430, "Avatar file is required , Local path is missing");
+  }
 
   let coverImageLocalPath
   if (
@@ -66,10 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImageLocalPath = req.files.coverImage[0].path;
   }
 
-  if (!avatarLocalPath) {
-    throw new ApiError(400, "Avatar file is required , Local path is missing");
-  }
-
+ 
   //we are using our function which we created before to upload the avatar on the cloudinary from local
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
@@ -87,8 +97,20 @@ const registerUser = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
   });
 
+  const verificationToken = user.generateVerificationToken();
+  user.verificationToken = verificationToken;
+  user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  await user.save();
+
+  const verificationUrl = `http://localhost:5173/verify-email/${verificationToken}`;
+  await transporter.sendMail({
+      to: user.email,
+      subject: "Verify Your Email",
+      html: `Please click this link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`
+  });
+
   const createdUser = await User.findById(user._id).select(
-    "-password -refreshToken"
+    "-password -refreshToken -verificationToken -verificationTokenExpires"
   );
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user");
@@ -97,6 +119,28 @@ const registerUser = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .json(new ApiResponse(200, createdUser, "User registered succefully"));
+});
+
+const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+
+  const user = await User.findOne({
+    verificationToken: token,
+    verificationTokenExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+   throw new ApiError(400 , "Invalid or Expired Token")
+  }
+
+  user.isVerified = true;
+  user.verificationToken = undefined;
+  user.verificationTokenExpires = undefined;
+  await user.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Email verified successfully"));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -121,12 +165,17 @@ const loginUser = asyncHandler(async (req, res) => {
      throw new ApiError(404, "User does not exist");
     
   }
-
   const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!isPasswordValid) {
     throw new ApiError(401, "Password incorrect");
   }
+
+  if (!user.isVerified) {
+    throw new ApiError(410, "Please verify your email before logging in");
+}
+
+  
 
   const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
     user._id
@@ -158,6 +207,36 @@ const loginUser = asyncHandler(async (req, res) => {
         "User logged in successfully"
       )
     );
+});
+
+const resendVerificationEmail = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+      throw new ApiError(404, "User not found");
+  }
+
+  if (user.isVerified) {
+      throw new ApiError(400, "Email already verified");
+  }
+
+  const verificationToken = user.generateVerificationToken();
+  user.verificationToken = verificationToken;
+  user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  await user.save();
+
+  const verificationUrl = `localhost:5173/verify-email/${verificationToken}`;
+  await transporter.sendMail({
+      to: user.email,
+      subject: "Verify Your Email",
+      html: `Please click this link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`
+  });
+
+  return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Verification email resent successfully"));
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -579,5 +658,7 @@ export {
   updateUserCoverImage,
   getUserChannelProfile,
   getWatchHistory,
-  getUserChannelProfileUnauth
+  getUserChannelProfileUnauth,
+  verifyEmail,
+  resendVerificationEmail
 };

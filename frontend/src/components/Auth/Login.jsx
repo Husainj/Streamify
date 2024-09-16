@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ToastContainer , toast } from 'react-toastify';
 import {setUser , clearUser} from '../../redux/slices/authSlice'
 
+import { extractErrorMessage } from '../../services/extractError';
 
 
 const Login = ({ toggleLogin, switchToRegister }) => {
@@ -48,7 +49,7 @@ const Login = ({ toggleLogin, switchToRegister }) => {
       console.log("STATUS" , response.status)
 
       if (response.status === 200) {
-       setError("User login successful in frontend")
+     
        const { fullname, username, email, avatar, coverImage , _id} = user;
       //  dispatch(toggleIsLogin())
       dispatch(setUser({ fullname, username, email, avatar, coverImage , _id}));
@@ -60,12 +61,13 @@ const Login = ({ toggleLogin, switchToRegister }) => {
       }
 
     } catch (error) {
-     
+    
       console.log("Error" , error)
       console.log("Error.response" , error.response)
-      console.log("Errro.response.data" , error.response.data)
-      toast.error(error.response.data)
-      setError('An error occurred while Login the user in frontend' , error);
+      console.log("Error.response.data" , error.response.data)
+      const errorMessage = extractErrorMessage(error.response.data);
+      toast.error(errorMessage);
+      
     }
     finally {
       setLoading(false); 

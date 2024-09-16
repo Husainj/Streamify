@@ -12,6 +12,8 @@ import {
   updateAccountDetails,
   updateUserAvatar,
   updateUserCoverImage,
+  verifyEmail,
+  resendVerificationEmail
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -47,5 +49,6 @@ router.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updat
 router.route("/c/:username").get( verifyJWT,getUserChannelProfile); // If i remove verify jwt then my channel page will work , If I keep it then my isSubscribed state will be managed
 router.route("/c/u/:username").get(getUserChannelProfileUnauth)
 router.route("/history").get(verifyJWT, getWatchHistory);
-
+router.route("/verify-email/:token").get(verifyEmail);
+router.route("/resend-verification").post(resendVerificationEmail);
 export default router;

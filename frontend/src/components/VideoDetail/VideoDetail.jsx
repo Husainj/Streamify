@@ -108,6 +108,7 @@ const VideoDetail = () => {
     try {
       const response = await api.post(`/comments/${id}`, { content: newComment });
       const newCommentData = {
+        _id: response.data.data._id, // Ensure you use the new comment's ID
         content: response.data.data.content,
         owner: {
           _id: user._id,
@@ -116,33 +117,39 @@ const VideoDetail = () => {
         },
         isOwner: true,
       };
+      
+      // Update comments immediately without needing to refresh
       setComments([newCommentData, ...comments]);
-      setNewComment('');
+      setNewComment(''); // Clear the input field
       toast.success('Comment added successfully');
     } catch (error) {
-    
       if(error.response.status === 420) {
         toast.error("Please Login!");
       }
-      console.log(error)
+      console.log(error);
     }
   };
 
   const handleUpdateComment = async (commentId) => {
     try {
       const response = await api.patch(`/comments/c/${commentId}`, { content: updatedCommentText });
-      setComments(
-        comments.map((comment) =>
-          comment._id === commentId ? { ...response.data.data, isOwner: true } : comment
-        )
+  
+      // Update the comments list with the updated comment
+      const updatedComments = comments.map((comment) =>
+        comment._id === commentId
+          ? { ...comment, content: response.data.data.content } // Update the comment's content
+          : comment
       );
+  
+      setComments(updatedComments); // Set the updated list to trigger re-render
       setEditingComment(null);
-      setUpdatedCommentText('');
+      setUpdatedCommentText(''); // Clear the input field
       toast.success('Comment updated successfully');
     } catch (error) {
       toast.error(error.response.data);
     }
   };
+  
 
   const handleDeleteComment = async (commentId) => {
     try {

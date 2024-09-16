@@ -19,7 +19,9 @@ const isLoggedIn = useSelector((state)=>state.auth.isLoggedIn)
   };
 
   useEffect(() => {
-    fetchSubscribedChannels();
+    if (isLoggedIn) {
+      fetchSubscribedChannels();
+    }
   }, [user._id , isLoggedIn]); // Empty dependency array ensures this runs once on mount
 
   const navigateToHome = () => {
