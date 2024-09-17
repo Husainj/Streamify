@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect , useRef , useCallback } from 'react';
 import { Link, useParams ,useNavigate  } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import api from '../../services/api';
 import { ToastContainer, toast } from 'react-toastify';
 import Sidebar from '../Sidebar/Sidebar';
-import { Edit, Menu, Trash, Heart , Home, Upload, Settings, LogOut } from "lucide-react";
+import { Edit, Menu, Trash, Heart, Eye, Home, Upload, Settings, LogOut } from "lucide-react";
 import 'react-toastify/dist/ReactToastify.css';
 import MobileMenu from '../MobileMenu/MobileMenu';
+
+
 const VideoDetail = () => {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
@@ -26,22 +28,35 @@ const VideoDetail = () => {
   const [channelAvatar , setChannelAvatar] = useState(null)
   const [subscriberCount , SetSubscriberCount] = useState(0)
 
+  const [views, setViews] = useState(0);
+  const videoRef = useRef(null);
+  const viewIncrementedRef = useRef(false);
 
-  const navigate = useNavigate();
+  
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const user = useSelector((state)=>state.auth.user)
 
-  useEffect(() => {
-    const fetchVideoDetails = async () => {
-      try {
-        const response = await api.get(`/videos/${id}`);
-        console.log("Video details : " , response.data.data)
-        setVideo(response.data.data);
-      } catch (error) {
-        toast.error(error.response.data);
-      }
-    };
+const navigate = useNavigate();
 
+
+useEffect(() => {
+  const fetchVideoDetails = async () => {
+    try {
+      const response = await api.get(`/videos/${id}`);
+      console.log("Video details : ", response.data.data);
+      setVideo(response.data.data);
+      setViews(response.data.data.views);
+    } catch (error) {
+      toast.error(error.response.data);
+    }
+  };
+
+  fetchVideoDetails();
+  viewIncrementedRef.current = false;
+}, [id]);
+
+useEffect(() => {
+  if (video) {
     const fetchComments = async () => {
       try {
         const response = await api.get(`/comments/${id}`);
@@ -57,52 +72,83 @@ const VideoDetail = () => {
 
     const fetchLikes = async () => {
       try {
-        console.log("is logged in : " ,isLoggedIn)
-        if(isLoggedIn){
+        if (isLoggedIn) {
           const response = await api.get(`/likes/getLikes/${id}`);
           setLikes(response.data.data.likeCount);
           setIsLiked(response.data.data.isLiked);
-       
-        }
-        else{
-          const response = await api.get(`/likes/getLikes/u/${id}`)
+        } else {
+          const response = await api.get(`/likes/getLikes/u/${id}`);
           setLikes(response.data.data.likeCount);
           setIsLiked(response.data.data.isLiked);
-        
         }
       } catch (error) {
         toast.error(error.response.data);
       }
     };
 
-   const fetchChannelDetails = async () => {
-    try {
-      if(isLoggedIn){
-        const response = await api.get(`/users/c/${video.owner.username}`)
-        setChannelAvatar(response.data.data.avatar)
-       SetSubscriberCount(response.data.data.subscribersCount)
-       console.log("Is subscribed : " , response.data.data.isSubscribed)
-       setIsSubscribed(response.data.data.isSubscribed)
-      console.log("Channel details : " , response.data.data)
-      }else{
-        const response = await api.get(`/users/c/u/${video.owner.username}`)
-        setChannelAvatar(response.data.data.avatar)
-       SetSubscriberCount(response.data.data.subscribersCount)
-       console.log("Is subscribed : " , response.data.data.isSubscribed)
-       setIsSubscribed(response.data.data.isSubscribed)
-      console.log("Channel details : " , response.data.data)
+    const fetchChannelDetails = async () => {
+      try {
+        if (isLoggedIn) {
+          const response = await api.get(`/users/c/${video.owner.username}`);
+          setChannelAvatar(response.data.data.avatar);
+          SetSubscriberCount(response.data.data.subscribersCount);
+          setIsSubscribed(response.data.data.isSubscribed);
+        } else {
+          const response = await api.get(`/users/c/u/${video.owner.username}`);
+          setChannelAvatar(response.data.data.avatar);
+          SetSubscriberCount(response.data.data.subscribersCount);
+          setIsSubscribed(response.data.data.isSubscribed);
+        }
+      } catch (error) {
+        toast.error(error);
       }
-     
-    } catch (error) {
-      toast.error(error)
-    }
-   }
+    };
 
-    fetchVideoDetails();
     fetchComments();
     fetchLikes();
     fetchChannelDetails();
-  }, [id, user._id ,  video && video.owner.username]);
+  }
+}, [id, user._id, video, isLoggedIn]);
+
+  const incrementViewCount = useCallback(async () => {
+    if (!viewIncrementedRef.current) {
+      try {
+        const response = await api.patch(`/videos/views/${id}`);
+        console.log("Views Response : ", response);
+        setViews(prevViews => prevViews + 1);
+        viewIncrementedRef.current = true;
+      } catch (error) {
+        console.error('Error incrementing view count:', error);
+      }
+    }
+  }, [id]);
+
+  const handleTimeUpdate = useCallback(() => {
+    if (videoRef.current && !viewIncrementedRef.current) {
+      const currentTime = videoRef.current.currentTime;
+      const duration = videoRef.current.duration;
+      const percentageWatched = (currentTime / duration) * 100;
+
+      if (percentageWatched >= 25) {
+        incrementViewCount();
+      }
+    }
+  }, [incrementViewCount]);
+
+
+
+  useEffect(() => {
+    const currentVideoRef = videoRef.current;
+    if (currentVideoRef) {
+      currentVideoRef.addEventListener('timeupdate', handleTimeUpdate);
+  
+      return () => {
+        currentVideoRef.removeEventListener('timeupdate', handleTimeUpdate);
+      };
+    }
+  }, [handleTimeUpdate]);
+
+
 
   const handleAddComment = async () => {
     try {
@@ -213,6 +259,10 @@ const VideoDetail = () => {
   };
 
 
+
+
+
+
   return (
     <div className="flex bg-gray-900 min-h-screen">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -238,11 +288,13 @@ const VideoDetail = () => {
           {/* Video Player and Info */}
           <div className="lg:w-2/3">
             <div className="video-container mb-6">
-              <video
+            <video
+                ref={videoRef}
                 src={video.videoFile}
                 controls
                 className="w-full rounded-lg shadow-lg mb-4"
                 style={{ aspectRatio: '16/9' }}
+                onTimeUpdate={handleTimeUpdate} 
               ></video>
               <h2 className="text-2xl lg:text-3xl font-bold mb-2">{video.title}</h2>
               <div className="flex items-center justify-between mb-4">
@@ -279,14 +331,28 @@ const VideoDetail = () => {
 
           {/* Like & Comments Section */}
           <div className="lg:w-1/3">
-            <div className="mb-6">
-              <button
-                className={`flex items-center space-x-2 ${isLiked ? 'text-red-500' : 'text-gray-400'}`}
-                onClick={toggleLike}
-              >
-                {isLiked ? "❤️" : "🤍"}  <span> {likes} Likes</span>
-              </button>
-            </div>
+          <div className="flex flex-wrap items-center justify-between bg-gray-800 rounded-lg p-4 mb-6">
+                <div className="flex items-center space-x-6 w-full sm:w-auto mb-4 sm:mb-0">
+                  <button
+                    onClick={toggleLike}
+                    className={`flex items-center space-x-2 ${
+                      isLiked ? 'text-red-500' : 'text-gray-400'
+                    } hover:text-red-500 transition-colors duration-200`}
+                  >
+                    <Heart
+                      size={24}
+                      fill={isLiked ? 'currentColor' : 'none'}
+                      className="transition-transform duration-200 transform hover:scale-110"
+                    />
+                    <span className="text-lg font-semibold">{likes.toLocaleString()}</span>
+                  </button>
+                  <div className="flex items-center space-x-2 text-gray-400">
+                    <Eye size={24} />
+                    <span className="text-lg font-semibold">{views.toLocaleString()}</span>
+                  </div>
+                </div>
+               
+              </div>
 
             <div className="comments-section">
               <h3 className="text-xl font-semibold mb-4 border-b-2 border-gray-700 pb-2">Comments</h3>

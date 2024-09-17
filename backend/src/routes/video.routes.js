@@ -7,6 +7,7 @@ import {
     publishAVideo,
     togglePublishStatus,
     updateVideo,
+    viewIncreamenter
 } from "../controllers/video.controller.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 import {upload} from "../middlewares/multer.middleware.js"
@@ -39,5 +40,5 @@ router
     .patch(upload.single("thumbnail"),verifyJWT, updateVideo);
 //patch is used to send the modified data only.
 router.route("/toggle/publish/:videoId").patch(verifyJWT,togglePublishStatus);
-
+router.route("/views/:videoId").patch(viewIncreamenter)
 export default router
