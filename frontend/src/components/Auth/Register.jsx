@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Loading from '../Loading/Loading';
 import { extractErrorMessage } from '../../services/extractError';
 import { toast, ToastContainer } from 'react-toastify';
-import { UploadIcon } from 'lucide-react'; // Upload icon
+import { UploadIcon } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Register = ({ toggleRegister, switchToLogin }) => {
@@ -12,23 +12,36 @@ const Register = ({ toggleRegister, switchToLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null); // Avatar preview
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
-  const [coverImagePreview, setCoverImagePreview] = useState(null); // Cover image preview
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [isUsernameValid, setIsUsernameValid] = useState(true);
+
+  useEffect(() => {
+    validateUsername(username);
+  }, [username]);
+
+  const validateUsername = (value) => {
+    const isValid = !/[A-Z\s]/.test(value);
+    setIsUsernameValid(isValid);
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
+  
+
     try {
       const formData = new FormData();
       formData.append('fullname', fullname);
       formData.append('email', email);
-      formData.append('username', username);
+      formData.append('username', normalizedUsername);
       formData.append('password', password);
       if (avatar) formData.append('avatar', avatar);
       if (coverImage) formData.append('coverImage', coverImage);
@@ -77,7 +90,7 @@ const Register = ({ toggleRegister, switchToLogin }) => {
     const file = e.target.files[0];
     if (file) {
       setAvatar(file);
-      setAvatarPreview(URL.createObjectURL(file)); // Set the avatar preview URL
+      setAvatarPreview(URL.createObjectURL(file));
     }
   };
 
@@ -85,7 +98,7 @@ const Register = ({ toggleRegister, switchToLogin }) => {
     const file = e.target.files[0];
     if (file) {
       setCoverImage(file);
-      setCoverImagePreview(URL.createObjectURL(file)); // Set the cover image preview URL
+      setCoverImagePreview(URL.createObjectURL(file));
     }
   };
 
@@ -168,9 +181,16 @@ const Register = ({ toggleRegister, switchToLogin }) => {
               placeholder="Channel Name"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 bg-gray-700 rounded-lg border ${
+                isUsernameValid ? 'border-gray-600' : 'border-red-500'
+              } focus:outline-none focus:ring-2 ${
+                isUsernameValid ? 'focus:ring-blue-500' : 'focus:ring-red-500'
+              }`}
               required
             />
+            {!isUsernameValid && (
+              <p className="text-red-500 text-sm">Channel Name must be lowercase without spaces</p>
+            )}
             {/* Password */}
             <input
               type="password"
@@ -198,7 +218,11 @@ const Register = ({ toggleRegister, switchToLogin }) => {
               </label>
             </div>
             {/* Register Button */}
-            <button type="submit" className="w-full bg-blue-500 py-2 rounded-lg hover:bg-blue-600">
+            <button 
+              type="submit" 
+              className="w-full bg-blue-500 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!isUsernameValid}
+            >
               Register
             </button>
           </form>
@@ -207,12 +231,12 @@ const Register = ({ toggleRegister, switchToLogin }) => {
           <button className="text-blue-500" onClick={switchToLogin}>
             Login
           </button>
-          <button className="text-red-500" onClick={toggleRegister}>
-            Close
+          <button className="text-gray-400" onClick={toggleRegister}>
+            Cancel
           </button>
         </div>
+        <ToastContainer />
       </div>
-      <ToastContainer />
     </div>
   );
 };

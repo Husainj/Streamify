@@ -1,80 +1,60 @@
 import React, { useState } from 'react';
 import Loading from '../Loading/Loading';
-import api from "../../services/api"
-import { useNavigate} from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
-// import {toggleIsLogin} from '../../redux/slices/authSlice'
-import { ToastContainer , toast } from 'react-toastify';
-import {setUser , clearUser} from '../../redux/slices/authSlice'
-
+import api from "../../services/api";
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { ToastContainer, toast } from 'react-toastify';
+import { setUser } from '../../redux/slices/authSlice';
 import { extractErrorMessage } from '../../services/extractError';
-
 
 const Login = ({ toggleLogin, switchToRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null); // State for unverified email
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  
-
-
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(null);  // Reset error state before each request
+    setError(null);
     setLoading(true);
+    setUnverifiedEmail(null);
 
     try {
-  
-      // const response = await axios.post('http://localhost:8000/api/v1/users/login', {
-      //   username,
-      //   password
-      // });
-
-      const response = await api.post('/users/login' , {
+      const response = await api.post('/users/login', {
         username,
         password
-      })
-      
-      console.log("This is the data recieved :: ")
-      console.log( "Data recieved",response)
-      console.log("Response.data.data : " , response.data.data)
-      console.log("response.data.data.user._id : " , response.data.data.user._id)
+      });
 
       const { accessToken, refreshToken, user } = response.data.data;
-      console.log("Access token : " , accessToken)
-      console.log("Refresh token : " , refreshToken)
-      console.log("STATUS" , response.status)
 
       if (response.status === 200) {
-     
-       const { fullname, username, email, avatar, coverImage , _id} = user;
-      //  dispatch(toggleIsLogin())
-      dispatch(setUser({ fullname, username, email, avatar, coverImage , _id}));
-     
-      //  dispatch(login())
-      //  setIsLoggedIn(true);
+        const { fullname, username, email, avatar, coverImage, _id } = user;
+        dispatch(setUser({ fullname, username, email, avatar, coverImage, _id }));
         toggleLogin();
-    
       }
-
     } catch (error) {
-    
-      console.log("Error" , error)
-      console.log("Error.response" , error.response)
-      console.log("Error.response.data" , error.response.data)
+      const errorMessage = extractErrorMessage(error.response.data);
+      if (error.response.status === 410) {
+        setUnverifiedEmail(username); // Set unverified email for resending the verification
+      }
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to resend verification email
+  const resendVerificationEmail = async () => {
+    try {
+      await api.post('/users/resend-verification', { username });
+      toast.success("Verification email has been resent. Please check your inbox.");
+    } catch (error) {
       const errorMessage = extractErrorMessage(error.response.data);
       toast.error(errorMessage);
-      
     }
-    finally {
-      setLoading(false); 
-    }
-
-
-   
   };
 
   return (
@@ -84,7 +64,7 @@ const Login = ({ toggleLogin, switchToRegister }) => {
         <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
         {error && <p className="text-red-500 text-center">{error}</p>}
         {loading ? (
-          <Loading />  // Display the loading component when loading
+          <Loading />
         ) : (
           <form onSubmit={handleLogin} className="space-y-4">
             <input
@@ -106,6 +86,20 @@ const Login = ({ toggleLogin, switchToRegister }) => {
             </button>
           </form>
         )}
+
+        {/* Show Resend Verification Email Button if the email is unverified */}
+        {unverifiedEmail && (
+          <div className="mt-4 text-center">
+            <p className="text-yellow-400">Email not verified. Check your inbox or resend the verification email.</p>
+            <button
+              className="mt-2 bg-blue-500 py-2 px-4 rounded-lg hover:bg-blue-600"
+              onClick={resendVerificationEmail}
+            >
+              Resend Verification Email
+            </button>
+          </div>
+        )}
+
         <div className="flex justify-between mt-4">
           <button className="text-blue-500" onClick={switchToRegister}>
             Register

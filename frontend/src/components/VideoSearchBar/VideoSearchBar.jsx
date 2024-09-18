@@ -14,7 +14,14 @@ const VideoSearchBar = () => {
   };
 
   const handleSearch = () => {
-    navigate(`/search?query=${query}`);
+    if (query.startsWith("@")) {
+      // If the query starts with '@', navigate to the channel page
+      const username = query.slice(1); // Remove '@' from the query to get the username
+      navigate(`/channel/${username}`);
+    } else {
+      // Otherwise, navigate to the search results page
+      navigate(`/search?query=${query}`);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -28,7 +35,7 @@ const VideoSearchBar = () => {
       <div className="hidden md:flex items-center flex-grow mx-4">
         <input
           type="text"
-          placeholder="Search videos..."
+          placeholder="Search videos or channels by starting with '@' for channel names."
           value={query}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
@@ -43,24 +50,24 @@ const VideoSearchBar = () => {
       </div>
 
       <div className="mt-4 md:hidden flex-col">
-       
-        <div className="flex items-center">
-          <input
-            type="text"
-            placeholder="Search"
-            value={query}
-            onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
-            className="w-full px-4 py-2 bg-gray-800 rounded-l-full focus:outline-none"
-          />
-          <button
-            onClick={handleSearch}
-            className="bg-gray-700 px-4 py-2.5 rounded-r-full"
-          >
-            <Search size={20} />
-          </button>
-        </div>
-      </div>
+  <div className="flex items-center">
+    <input
+      type="text"
+      placeholder="Search videos/channels by starting with '@' for channel names."
+      value={query}
+      onChange={handleInputChange}
+      onKeyPress={handleKeyPress}
+      className="w-full px-3 py-2 bg-gray-800 rounded-l-full text-sm focus:outline-none"
+    />
+    <button
+      onClick={handleSearch}
+      className="bg-gray-700 px-4 py-2 rounded-r-full"
+    >
+      <Search size={20} />
+    </button>
+  </div>
+</div>
+
     </div>
   );
 };

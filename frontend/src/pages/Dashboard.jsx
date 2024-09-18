@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
-import { Edit2, Users, ThumbsUp, Video, Eye, Menu, Home, Upload, Settings, LogOut, Save , X} from 'lucide-react';
+import { Edit2, Users, ThumbsUp, Video, Eye, Menu, Home, Upload, Settings, LogOut, Save , X } from 'lucide-react';
 import api from '../services/api';
 import Sidebar from '../components/Sidebar/Sidebar';
 import MobileMenu from '../components/MobileMenu/MobileMenu';
 const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
   const [videos, setVideos] = useState([]);
   const [stats, setStats] = useState({
     likes: 0,
@@ -231,6 +230,8 @@ const Dashboard = () => {
     </div>
   );  
 
+
+
   return (
     <div className="flex bg-gray-900 text-white min-h-screen">
     <Sidebar />
@@ -275,7 +276,7 @@ const Dashboard = () => {
               )}
             </button>
           </div>
-
+          
           <div className="flex flex-row items-start space-x-4 mb-8">
             <div className="relative flex-shrink-0">
               <img src={profile.avatar} alt={profile.username} className="w-24 h-24 rounded-full" />
@@ -340,8 +341,10 @@ const Dashboard = () => {
                   <p className="text-sm text-gray-400 mt-1">{profile.email}</p>
                 </>
               )}
+                 
             </div>
           </div>
+        
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-gray-800 p-4 rounded-lg cursor-pointer" onClick={handleOpenSubscribersModal}>
             <div className="flex justify-between items-center mb-2">
@@ -404,6 +407,7 @@ const Dashboard = () => {
 
         </div>
         {showSubscribersModal && <SubscribersModal />}
+      
       </div>
 
       <ToastContainer />

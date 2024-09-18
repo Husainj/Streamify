@@ -68,7 +68,8 @@ const ChannelPage = () => {
     setIsLoadingSubscribers(true);
     try {
       const response = await api.get(`/subscriptions/c/${channel._id}`);
-      setSubscribers(response.data.data || []);
+    console.log("Subscribers : " , response.data.data)
+      setSubscribers(response.data.data);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to fetch subscribers");
     } finally {
@@ -96,12 +97,19 @@ const ChannelPage = () => {
           <p className="text-center">Loading subscribers...</p>
         ) : subscribers.length > 0 ? (
           <ul className="space-y-4">
-            {subscribers.map((subscriber) => (
-              <li key={subscriber.subscriber._id} className="flex items-center space-x-3">
-                <img src={subscriber.subscriber.avatar} alt={subscriber.subscriber.fullname} className="w-10 h-10 rounded-full" />
-                <span className=" text-white ">{subscriber.subscriber.fullname}</span>
-              </li>
-            ))}
+           {subscribers
+  .filter(subscriber => subscriber.subscriber && Object.keys(subscriber.subscriber).length > 0) // Filter out empty subscriber objects
+  .map(subscriber => (
+    <li key={subscriber.subscriber._id} className="flex items-center space-x-3">
+      <img
+        src={subscriber.subscriber.avatar}
+        alt={subscriber.subscriber.fullname}
+        className="w-10 h-10 rounded-full"
+      />
+      <span className="text-white">{subscriber.subscriber.fullname}</span>
+    </li>
+  ))}
+
           </ul>
         ) : (
           <p className="text-center">No subscribers yet.</p>

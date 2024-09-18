@@ -210,34 +210,51 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const resendVerificationEmail = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+  let { email, username } = req.body;
 
-  const user = await User.findOne({ email });
+  // Check if email is provided; if not, find the user by username
+  let user;
+  if (email) {
+    user = await User.findOne({ email });
+  } else if (username) {
+    user = await User.findOne({ username });
+    if (user) {
+      email = user.email;  // Extract the email from the found user
+    }
+  }
 
+  // If no user is found, return an error
   if (!user) {
-      throw new ApiError(404, "User not found");
+    throw new ApiError(404, "User not found");
   }
 
+  // If the user's email is already verified, return an error
   if (user.isVerified) {
-      throw new ApiError(400, "Email already verified");
+    throw new ApiError(400, "Email already verified");
   }
 
+  // Generate a new verification token and save it to the user
   const verificationToken = user.generateVerificationToken();
   user.verificationToken = verificationToken;
   user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
   await user.save();
 
-  const verificationUrl = `localhost:5173/verify-email/${verificationToken}`;
+  // Construct the verification URL
+  const verificationUrl = `http://localhost:5173/verify-email/${verificationToken}`;
+  
+  // Send the verification email
   await transporter.sendMail({
-      to: user.email,
-      subject: "Verify Your Email",
-      html: `Please click this link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`
+    to: user.email,
+    subject: "Verify Your Email",
+    html: `Please click this link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`
   });
 
+  // Respond with success
   return res
-      .status(200)
-      .json(new ApiResponse(200, {}, "Verification email resent successfully"));
+    .status(200)
+    .json(new ApiResponse(200, {}, "Verification email resent successfully"));
 });
+
 
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
@@ -338,30 +355,33 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, " Current user fetched successfully "));
 });
 
-const updateAccountDetails = asyncHandler(async(req , res) => {
-    const { fullname , email  } = req.body
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  const { fullname, email } = req.body;
 
-    if(!fullname || !email){
-        throw new ApiError(400 , "All fields are required")
-    }
+  if (!fullname || !email) {
+      throw new ApiError(400, "All fields are required");
+  }
 
- const user = await User.findByIdAndUpdate(
-    req.user?._id,
-        {
-            $set:{
-                fullname,
-                email
-            }
-        },
-        {new:true}
-    ).select("-password")
+  // Build the update object dynamically based on whether email is being changed
+  const updateFields = { fullname }; // Always update fullname
 
-    return res
-    .status(200)
-    .json(new ApiResponse(200 , user , "Account details updated successfully"))
+  // If the email is changed, update it and set isVerified to false
+  if (email !== req.user.email) {
+      updateFields.email = email;
+      updateFields.isVerified = false; // Set isVerified to false if email is changed
+  }
 
+  const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      { $set: updateFields },
+      { new: true }
+  ).select("-password");
 
-})
+  return res
+      .status(200)
+      .json(new ApiResponse(200, user, "Account details updated successfully"));
+});
+
 
 const updateUserAvatar = asyncHandler(async(req, res)=>{
    const avatarLocalPath = req.file?.path

@@ -6,6 +6,7 @@ import VideoSearchBar from '../components/VideoSearchBar/VideoSearchBar';
 import Loading from '../components/Loading/Loading';
 import { Menu } from "lucide-react";
 import MobileMenu from '../components/MobileMenu/MobileMenu';
+
 const SearchResultsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -81,17 +82,17 @@ const SearchResultsPage = () => {
             {videos.length > 0 ? videos.map((video) => (
               <div
                 key={video._id}
-                className="flex bg-gray-800 rounded-lg overflow-hidden shadow-lg"
+                className="flex bg-gray-800 rounded-lg overflow-hidden shadow-lg flex-col md:flex-row"
                 onClick={() => video?.owner?.username && (window.location.href = `/videos/${video._id}`)}
               >
                 <img
                   src={video.thumbnail || 'https://via.placeholder.com/300'}
                   alt={video.title}
-                  className="w-48 h-auto object-cover"
+                  className="w-full md:w-48 h-auto object-cover"
                   style={{ aspectRatio: '16/9' }}
                 />
-                <div className="p-4 flex flex-col justify-center">
-                  <h3 className="text-xl font-semibold truncate">{video.title}</h3>
+                <div className="p-4 flex flex-col justify-center flex-grow">
+                  <h3 className="text-xl font-semibold truncate md:whitespace-nowrap md:overflow-hidden">{video.title}</h3>
                   <p className="text-gray-400 mt-2 line-clamp-2">{video.description}</p>
                   <p className="text-gray-500 text-sm mt-4">
                     {video?.owner?.username || 'Unknown User'}

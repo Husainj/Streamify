@@ -325,14 +325,8 @@ useEffect(() => {
   </button>
 </div>
 
-              <p className="text-sm lg:text-base mb-4 leading-relaxed border-t-2 border-gray-700 pt-2">{video.description}</p>
-            </div>
-          </div>
-
-          {/* Like & Comments Section */}
-          <div className="lg:w-1/3">
-          <div className="flex flex-wrap items-center justify-between bg-gray-800 rounded-lg p-4 mb-6">
-                <div className="flex items-center space-x-6 w-full sm:w-auto mb-4 sm:mb-0">
+<div className="lg:hidden mb-4">
+                <div className="flex items-center justify-between bg-gray-800 rounded-lg p-4">
                   <button
                     onClick={toggleLike}
                     className={`flex items-center space-x-2 ${
@@ -351,8 +345,37 @@ useEffect(() => {
                     <span className="text-lg font-semibold">{views.toLocaleString()}</span>
                   </div>
                 </div>
-               
               </div>
+
+              {/* Description */}
+              <p className="text-sm lg:text-base mb-4 leading-relaxed border-t-2 border-gray-700 pt-2">{video.description}</p>
+            </div>
+          </div>
+
+          {/* Like & Comments Section */}
+          <div className="lg:w-1/3">
+            {/* Views and Likes - Original position for large screens */}
+            <div className="hidden lg:block mb-6">
+              <div className="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+                <button
+                  onClick={toggleLike}
+                  className={`flex items-center space-x-2 ${
+                    isLiked ? 'text-red-500' : 'text-gray-400'
+                  } hover:text-red-500 transition-colors duration-200`}
+                >
+                  <Heart
+                    size={24}
+                    fill={isLiked ? 'currentColor' : 'none'}
+                    className="transition-transform duration-200 transform hover:scale-110"
+                  />
+                  <span className="text-lg font-semibold">{likes.toLocaleString()}</span>
+                </button>
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <Eye size={24} />
+                  <span className="text-lg font-semibold">{views.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
 
             <div className="comments-section">
               <h3 className="text-xl font-semibold mb-4 border-b-2 border-gray-700 pb-2">Comments</h3>
