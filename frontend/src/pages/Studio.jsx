@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar/Sidebar';
-import { PlusCircle, Edit } from 'lucide-react'; // Import Edit icon
+import { useNavigate } from 'react-router-dom';
+import { PlusCircle, Edit , Menu} from 'lucide-react'; // Import Edit icon
 import VideoCardStudio from '../components/VideoCardStudio/VideoCardStudio'; // Import the VideoCard component
 import api from '../services/api'; // Adjust the path as necessary
 import Loading from '../components/Loading/Loading'; // Import the Loading component
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import MobileMenu from '../components/MobileMenu/MobileMenu';
 const Studio = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false); // Add state for edit modal
@@ -16,7 +18,9 @@ const Studio = () => {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState(null); // State for current video ID
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 const user = useSelector((state)=>state.auth.user)
+const navigate = useNavigate();
   useEffect(() => {
     const fetchVideos = async () => {
       try {
@@ -107,11 +111,35 @@ const user = useSelector((state)=>state.auth.user)
     }
   };
 
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
   return (
     <div className="flex bg-gray-900 min-h-screen">
       <Sidebar />
       <div className="flex-1 md:ml-40 p-6 bg-gray-900 text-white min-h-screen">
+        
         <div className="flex justify-between items-center mb-6">
+        <div className="flex space-x-4">
+        <div className="md:hidden fixed top-0 left-0 z-50 p-4">
+          <button
+            onClick={toggleMobileMenu}
+            className="text-white focus:outline-none"
+          >
+            <Menu size={24} />
+          </button>
+        </div>
+
+        {isMobileMenuOpen && (
+        <MobileMenu
+          onClose={() => setIsMobileMenuOpen(false)}
+          onNavigate={handleNavigation}
+        />
+      )}
+        </div>
           <h1 className="text-2xl font-bold">My Studio</h1>
           <button
             onClick={toggleUploadModal}

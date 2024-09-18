@@ -36,6 +36,10 @@ const isLoggedIn = useSelector((state)=>state.auth.isLoggedIn)
     navigate(`/channel/${username}`);
   };
 
+  const navigateToConvo = () =>{
+    navigate('/convo')
+  }
+
   return (
     <div className="fixed left-0 h-full w-fit bg-gray-800 text-white p-4 border-r border-gray-700 hidden md:block overflow-y-auto">
       <div className="mb-4">
@@ -57,7 +61,7 @@ const isLoggedIn = useSelector((state)=>state.auth.isLoggedIn)
             </svg>
             <span className="mt-2">Home</span>
           </li>
-          <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md">
+          <li className="flex flex-col items-center py-2 hover:bg-gray-700 rounded-md"  onClick={navigateToConvo}>
             <svg
               className="w-6 h-6"
               fill="none"

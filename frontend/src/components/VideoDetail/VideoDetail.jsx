@@ -271,7 +271,7 @@ useEffect(() => {
         <div className="md:hidden fixed top-0 left-0 z-50 p-4">
           <button
             onClick={toggleMobileMenu}
-            className="text-white focus:outline-none"
+            className="text-white focus:outline-none   bg-black rounded-lg p-1"
           >
             <Menu size={24} />
           </button>

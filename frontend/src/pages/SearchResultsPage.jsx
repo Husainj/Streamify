@@ -57,7 +57,7 @@ const SearchResultsPage = () => {
       <div className="fixed top-0 left-0 right-0 bg-black z-50 p-4 flex items-center">
         <button
           onClick={toggleMobileMenu}
-          className="md:hidden text-white focus:outline-none mr-4"
+          className="md:hidden text-white focus:outline-none mr-4 "
         >
           <Menu size={24} />
         </button>

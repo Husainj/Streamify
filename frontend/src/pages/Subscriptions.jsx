@@ -40,7 +40,7 @@ const Subscriptions = () => {
 
   return (
     <div className="bg-gray-900 min-h-screen text-white">
-      <header className="bg-gray-800 p-4   sticky top-0 z-10">
+      <header className="bg-black p-4   sticky top-0 z-10">
        
         <div className="flex space-x-4">
         <div className="md:hidden fixed top-0 left-0 z-50 p-4">

@@ -135,7 +135,7 @@ const ChannelPage = () => {
         <div className="md:hidden fixed top-0 left-0 z-50 p-4">
           <button
             onClick={toggleMobileMenu}
-            className="text-white focus:outline-none"
+            className="text-white focus:outline-none bg-black rounded-lg p-1"
           >
             <Menu size={24} />
           </button>
@@ -151,10 +151,11 @@ const ChannelPage = () => {
 
         
 <div className="channel-details">
-          <div
+<div
             className="cover-image w-full h-60 bg-cover bg-center mb-4"
-            style={{ backgroundImage: `url(${channel.coverImage})` }}
+            style={{ backgroundImage: `url(${channel.coverImage})`  }}
           ></div>
+
           <div className="flex items-center mb-4">
             <img
               src={channel.avatar}

@@ -241,7 +241,7 @@ const Dashboard = () => {
         <div className="md:hidden fixed top-0 left-0 z-50 p-4">
           <button
             onClick={toggleMobileMenu}
-            className="text-white focus:outline-none"
+            className="text-white focus:outline-none  bg-black rounded-lg p-1"
           >
             <Menu size={24} />
           </button>
@@ -256,7 +256,7 @@ const Dashboard = () => {
 
         <div className="p-6 mt-12 md:mt-0 md:ml-[8rem]">
           <div className="relative w-full h-60 bg-cover bg-center mb-4 rounded-lg overflow-hidden" 
-               style={{ backgroundImage: `url(${profile.coverImage})` }}>
+               style={{ backgroundImage: `url(${profile.coverImage})`  }}>
             <input
               type="file"
               ref={coverImageInputRef}
