@@ -15,11 +15,11 @@ const VideoSearchBar = () => {
 
   const handleSearch = () => {
     if (query.startsWith("@")) {
-      // If the query starts with '@', navigate to the channel page
-      const username = query.slice(1); // Remove '@' from the query to get the username
+
+      const username = query.slice(1);
       navigate(`/channel/${username}`);
     } else {
-      // Otherwise, navigate to the search results page
+  
       navigate(`/search?query=${query}`);
     }
   };

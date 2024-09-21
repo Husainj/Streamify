@@ -6,7 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import Sidebar from "../components/Sidebar/Sidebar";
 import api from "../services/api";
 import MobileMenu from "../components/MobileMenu/MobileMenu";
-
+import Loading from "../components/Loading/Loading"
 const ChannelPage = () => {
   const { username } = useParams();
   const [channel, setChannel] = useState(null);
@@ -124,7 +124,7 @@ const ChannelPage = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  if (!channel) return <div>Loading...</div>;
+  if (!channel) return <Loading />;
 
 
   const formatDuration = (duration) => {
