@@ -84,7 +84,11 @@ const Header = () => {
             <Menu size={24} />
           </button>
           <div className="flex items-center md:mr-40">
-            <span className="text-xl font-bold">Vidflix{console.log("User id : " , user._id )}</span>
+          <span className="text-white font-bold text-2xl font-sans">
+  Streamify
+</span>
+
+
           </div>
         </div>
 

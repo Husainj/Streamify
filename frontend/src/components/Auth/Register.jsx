@@ -41,7 +41,7 @@ const Register = ({ toggleRegister, switchToLogin }) => {
       const formData = new FormData();
       formData.append('fullname', fullname);
       formData.append('email', email);
-      formData.append('username', normalizedUsername);
+      formData.append('username', username);
       formData.append('password', password);
       if (avatar) formData.append('avatar', avatar);
       if (coverImage) formData.append('coverImage', coverImage);

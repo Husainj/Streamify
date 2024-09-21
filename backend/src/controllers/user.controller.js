@@ -106,7 +106,34 @@ const registerUser = asyncHandler(async (req, res) => {
   await transporter.sendMail({
       to: user.email,
       subject: "Verify Your Email",
-      html: `Please click this link to verify your email: <a href="${verificationUrl}">${verificationUrl}</a>`
+      html: `<!DOCTYPE html>
+              <html lang="en">
+              <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Verify Your Email</title>
+              </head>
+              <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f8f8; border-radius: 5px;">
+                      <tr>
+                          <td style="padding: 20px;">
+                              <h1 style="color: #e50914; text-align: center; margin-bottom: 20px;">Streamify</h1>
+                              <div style="background-color: #ffffff; border-radius: 5px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                  <h2 style="color: #333; margin-bottom: 20px;">Verify Your Email Address</h2>
+                                  <p style="margin-bottom: 20px;">Thank you for signing up with Streamify! To complete your registration and start enjoying our services, please verify your email address by clicking the button below:</p>
+                                  <div style="text-align: center; margin-bottom: 20px;">
+                                      <a href="${verificationUrl}" style="background-color: #e50914; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email</a>
+                                  </div>
+                                  <p style="margin-bottom: 20px;">If the button above doesn't work, you can also click on the link below or copy and paste it into your browser:</p>
+                                  <p style="margin-bottom: 20px; word-break: break-all;"><a href="${verificationUrl}" style="color: #0066cc;">${verificationUrl}</a></p>
+                                  <p style="margin-bottom: 20px;">If you didn't create an account with Streamify, please disregard this email.</p>
+                              </div>
+                              <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #666;">© 2024 Streamify. All rights reserved.</p>
+                          </td>
+                      </tr>
+                  </table>
+              </body>
+              </html>`
   });
 
   const createdUser = await User.findById(user._id).select(
