@@ -102,7 +102,7 @@ const registerUser = asyncHandler(async (req, res) => {
   user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
   await user.save();
 
-  const verificationUrl = `http://localhost:5173/verify-email/${verificationToken}`;
+  const verificationUrl = `${process.env.CORS_ORIGIN}/verify-email/${verificationToken}`;
   await transporter.sendMail({
       to: user.email,
       subject: "Verify Your Email",
@@ -267,7 +267,7 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
   await user.save();
 
   // Construct the verification URL
-  const verificationUrl = `http://localhost:5173/verify-email/${verificationToken}`;
+  const verificationUrl = `${process.env.CORS_ORIGIN}/verify-email/${verificationToken}`;
   
   // Send the verification email
   await transporter.sendMail({
