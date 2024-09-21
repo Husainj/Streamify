@@ -230,7 +230,26 @@ const Dashboard = () => {
     </div>
   );  
 
-
+  const formatDuration = (duration) => {
+    if (!duration || isNaN(duration)) return '00:00';
+  
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.floor((duration % 3600) / 60);
+    const seconds = Math.floor(duration % 60);
+  
+    // If duration is more than or equal to 1 hour, show HH:MM:SS
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+  
+    // Otherwise, show MM:SS
+    return `${minutes.toString().padStart(2, '0')}:${seconds
+      .toString()
+      .padStart(2, '0')}`;
+  };
+  
 
   return (
     <div className="flex bg-gray-900 text-white min-h-screen">
@@ -388,7 +407,7 @@ const Dashboard = () => {
               className="w-full h-40 object-cover"
             />
             <span className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-sm px-1.5 py-0.5 rounded">
-              {video.duration?.toFixed(2)}
+            {formatDuration(video.duration)}
             </span>
           </div>
           <div className="p-4">

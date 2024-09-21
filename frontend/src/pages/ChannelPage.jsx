@@ -98,7 +98,7 @@ const ChannelPage = () => {
         ) : subscribers.length > 0 ? (
           <ul className="space-y-4">
            {subscribers
-  .filter(subscriber => subscriber.subscriber && Object.keys(subscriber.subscriber).length > 0) // Filter out empty subscriber objects
+  .filter(subscriber => subscriber.subscriber && Object.keys(subscriber.subscriber).length > 0) 
   .map(subscriber => (
     <li key={subscriber.subscriber._id} className="flex items-center space-x-3">
       <img
@@ -126,6 +126,27 @@ const ChannelPage = () => {
 
   if (!channel) return <div>Loading...</div>;
 
+
+  const formatDuration = (duration) => {
+    if (!duration || isNaN(duration)) return '00:00';
+  
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.floor((duration % 3600) / 60);
+    const seconds = Math.floor(duration % 60);
+  
+ 
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+  
+ 
+    return `${minutes.toString().padStart(2, '0')}:${seconds
+      .toString()
+      .padStart(2, '0')}`;
+  };
+  
   return (
     <div className="flex min-h-screen bg-gray-900">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -198,7 +219,7 @@ const ChannelPage = () => {
                         className="w-full h-40 object-cover rounded-lg mb-2"
                       />
                       <span className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-sm px-1.5 py-0.5 rounded">
-                        {video.duration?.toFixed(2)}
+                      {formatDuration(video.duration)}
                       </span>
                     </div>
                     <h3 className="text-lg font-semibold">{video.title}</h3>
