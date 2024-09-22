@@ -17,6 +17,9 @@ connectDB()
         console.log(`Port is open at : ${process.env.PORT}`)
     })
 
+    app.get("/" , (req , res)=>{
+        res.json("Hello");
+    })
 })
 .catch((err)=>{
     console.log("MongoDB connection failed : " , err)
