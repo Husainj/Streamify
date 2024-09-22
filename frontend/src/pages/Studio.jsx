@@ -56,7 +56,7 @@ const navigate = useNavigate();
     formData.append('description', description);
 
     try {
-      await axios.post('https://streamify-backend-orcin.vercel.app/api/v1/videos/', formData, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
@@ -81,7 +81,7 @@ const navigate = useNavigate();
     formData.append('description', description);
 
     try {
-      await axios.patch('https://streamify-backend-orcin.vercel.app/api/v1/videos/${currentVideoId}', formData, {
+      await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/${currentVideoId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });

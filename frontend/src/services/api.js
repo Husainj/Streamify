@@ -2,7 +2,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 const api = axios.create({
-  baseURL: 'https://streamify-backend-orcin.vercel.app/api/v1', // Replace with your backend URL
+  baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/v1`, // Replace with your backend URL
   headers: {
     'Content-Type': 'application/json',
   },

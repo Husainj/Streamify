@@ -46,7 +46,7 @@ const Register = ({ toggleRegister, switchToLogin }) => {
       if (avatar) formData.append('avatar', avatar);
       if (coverImage) formData.append('coverImage', coverImage);
 
-      const response = await axios.post('https://streamify-backend-orcin.vercel.app/api/v1/users/register', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/users/register`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log('Registration response: ', response);
@@ -72,7 +72,7 @@ const Register = ({ toggleRegister, switchToLogin }) => {
     setResendLoading(true);
     setError(null);
     try {
-      await axios.post('https://streamify-backend-orcin.vercel.app/api/v1/users/resend-verification', { email });
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/users/resend-verification`, { email });
       alert('Verification email resent. Please check your inbox.');
     } catch (error) {
       const errorMessage = extractErrorMessage(error.response.data);

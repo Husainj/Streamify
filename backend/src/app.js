@@ -6,7 +6,7 @@ const app = express()
 
 //middleware to allow only the provided url to connect with frontend
 app.use(cors({
-    origin :'https://streamify-frontend-jet.vercel.app' ,
+    origin :`${process.env.CORS_ORIGIN}` ,
     credentials: true
 }))
 
