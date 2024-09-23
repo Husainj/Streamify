@@ -216,7 +216,7 @@ const loginUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
     path:'/',
-    domain: process.env.COOKIE_DOMAIN
+    sameSite: 'None'
   };
 
   return res
@@ -300,7 +300,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
     path:'/',
-    domain: process.env.COOKIE_DOMAIN
+   sameSite: 'None'
   };
 
   return res
@@ -337,7 +337,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       httpOnly: true,
       secure: true,
       path:'/',
-      domain: process.env.COOKIE_DOMAIN
+      sameSite: 'None'
     };
     const { accessToken, newRefreshToken } =
       await generateAccessAndRefereshTokens(user._id);
