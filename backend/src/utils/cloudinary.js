@@ -1,44 +1,31 @@
-import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
-import path from "path"; // In case you want to use absolute paths
+import { v2 as cloudinary } from 'cloudinary';
 
+// Cloudinary configuration
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
+// Function to upload file buffer to Cloudinary
+const uploadOnCloudinary = async (fileBuffer, fileName) => {
   try {
-    if (!localFilePath) return null;
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: 'user_avatars', public_id: fileName, resource_type: 'auto' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
 
-    // Upload the file to Cloudinary
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto"
+      // Write buffer to stream
+      uploadStream.end(fileBuffer);
     });
 
-    console.log("File uploaded successfully:", response.url);
-
-    // Remove the file asynchronously and handle errors
-    fs.unlink(localFilePath, (err) => {
-      if (err) {
-        console.error(`Error removing file: ${localFilePath}`, err);
-      } else {
-        console.log(`Local file deleted: ${localFilePath}`);
-      }
-    });
-
-    return response;
+    return result;
   } catch (error) {
     console.error("Error uploading to Cloudinary:", error);
-
-    // Remove the file asynchronously even if the upload fails
-    fs.unlink(localFilePath, (err) => {
-      if (err) {
-        console.error(`Error removing file after failed upload: ${localFilePath}`, err);
-      }
-    });
-
     return null;
   }
 };

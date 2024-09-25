@@ -61,37 +61,41 @@ const registerUser = asyncHandler(async (req, res) => {
 
   //multer giving file path
   
-  const avatarLocalPath = req.files?.avatar[0]?.path;
+  const avatarFile = req.file; 
+  const avatarBuffer = avatarFile?.buffer;
+  const avatarFileName = avatarFile?.originalname;
 
-  //we cant check for coverimage like this because this code means that we are expecting to get an array from req.files
-  //coverimage , but when nothing is present then undefined error will come.
-  // const coverImageLocalPath = req.files?.coverImage[0]?.path;
-  if (!avatarLocalPath) {
-    throw new ApiError(430, "Avatar file is required , Local path is missing");
+  // Validate the avatar file presence
+  if (!avatarBuffer) {
+    throw new ApiError(430, "Avatar file is required, Buffer is missing");
   }
 
-  let coverImageLocalPath
+  // Handle cover image file if provided
+  let coverImageBuffer, coverImageFileName;
   if (
     req.files &&
+    req.files.coverImage &&
     Array.isArray(req.files.coverImage) &&
     req.files.coverImage.length > 0
   ) {
-    coverImageLocalPath = req.files.coverImage[0].path;
+    coverImageBuffer = req.files.coverImage[0].buffer;
+    coverImageFileName = req.files.coverImage[0].originalname;
   }
 
- 
-  //we are using our function which we created before to upload the avatar on the cloudinary from local
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  // Upload avatar and cover image to Cloudinary
+  const avatar = await uploadOnCloudinary(avatarBuffer, avatarFileName);
+  const coverImage = coverImageBuffer
+    ? await uploadOnCloudinary(coverImageBuffer, coverImageFileName)
+    : null;
 
   if (!avatar) {
-    throw new ApiError(400, "Avatar file is required");
+    throw new ApiError(400, "Error uploading avatar to Cloudinary");
   }
 
   const user = await User.create({
     fullname,
-    avatar: avatar.url,
-    coverImage: coverImage?.url || "",
+    avatar: avatar.secure_url,
+    coverImage: coverImage?.secure_url || "",
     email,
     password,
     username: username.toLowerCase(),
