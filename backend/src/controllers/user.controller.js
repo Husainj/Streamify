@@ -61,9 +61,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
   //multer giving file path
   
-  const avatarFile = req.file; 
-  const avatarBuffer = avatarFile?.buffer;
-  const avatarFileName = avatarFile?.originalname;
+  if (!req.files || !req.files.avatar || !req.files.avatar[0]) {
+    throw new ApiError(400, "Avatar file is required");
+  }
+
+  const avatarFile = req.files.avatar[0];
+  const avatarBuffer = avatarFile.buffer;
+  const avatarFileName = avatarFile.originalname;
+
 
   // Validate the avatar file presence
   if (!avatarBuffer) {
