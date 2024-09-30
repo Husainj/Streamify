@@ -8,6 +8,7 @@ import Loading from '../components/Loading/Loading'; // Import the Loading compo
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import MobileMenu from '../components/MobileMenu/MobileMenu';
+import { ToastContainer , toast } from 'react-toastify';
 const Studio = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false); // Add state for edit modal
@@ -56,13 +57,17 @@ const navigate = useNavigate();
     formData.append('description', description);
 
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/`, formData, {
+     const response =  await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
-      });
-      const response = await api.get('/dashboard/videos');
-      setVideos(response.data.data);
+      })
+      if(response){
+        toast.success("Video Uploaded Successfully")
+      
+        const vids = await api.get(`/dashboard/videos/${user._id}`);
+      setVideos(vids.data.data);
       setShowUploadModal(false);
+    }
     } catch (error) {
       console.error('Error uploading video:', error);
     } finally {
@@ -287,6 +292,7 @@ const navigate = useNavigate();
         {/* Loading Spinner */}
         {loading && <Loading />}
       </div>
+      <ToastContainer />
     </div>
   );
 };

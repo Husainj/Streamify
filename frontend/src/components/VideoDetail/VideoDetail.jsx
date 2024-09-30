@@ -31,7 +31,7 @@ const VideoDetail = () => {
   const [views, setViews] = useState(0);
   const videoRef = useRef(null);
   const viewIncrementedRef = useRef(false);
-
+  const viewIncrementRequestSentRef = useRef(false);
   
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const user = useSelector((state)=>state.auth.user)
@@ -110,43 +110,44 @@ useEffect(() => {
   }
 }, [id, user._id, video, isLoggedIn]);
 
-  const incrementViewCount = useCallback(async () => {
-    if (!viewIncrementedRef.current) {
-      try {
-        const response = await api.patch(`/videos/views/${id}`);
-        console.log("Views Response : ", response);
-        setViews(prevViews => prevViews + 1);
-        viewIncrementedRef.current = true;
-      } catch (error) {
-        console.error('Error incrementing view count:', error);
-      }
+const incrementViewCount = useCallback(async () => {
+  if (!viewIncrementedRef.current && !viewIncrementRequestSentRef.current) {
+    viewIncrementRequestSentRef.current = true;
+    try {
+      const response = await api.patch(`/videos/views/${id}`);
+      console.log("Views Response : ", response);
+      setViews(prevViews => prevViews + 1);
+      viewIncrementedRef.current = true;
+    } catch (error) {
+      console.error('Error incrementing view count:', error);
+    } finally {
+      viewIncrementRequestSentRef.current = false;
     }
-  }, [id]);
+  }
+}, [id]);
 
-  const handleTimeUpdate = useCallback(() => {
-    if (videoRef.current && !viewIncrementedRef.current) {
-      const currentTime = videoRef.current.currentTime;
-      const duration = videoRef.current.duration;
-      const percentageWatched = (currentTime / duration) * 100;
+const handleTimeUpdate = useCallback(() => {
+  if (videoRef.current && !viewIncrementedRef.current) {
+    const currentTime = videoRef.current.currentTime;
+    const duration = videoRef.current.duration;
+    const percentageWatched = (currentTime / duration) * 100;
 
-      if (percentageWatched >= 25) {
-        incrementViewCount();
-      }
+    if (percentageWatched >= 25) {
+      incrementViewCount();
     }
-  }, [incrementViewCount]);
+  }
+}, [incrementViewCount]);
 
+useEffect(() => {
+  const currentVideoRef = videoRef.current;
+  if (currentVideoRef) {
+    currentVideoRef.addEventListener('timeupdate', handleTimeUpdate);
 
-
-  useEffect(() => {
-    const currentVideoRef = videoRef.current;
-    if (currentVideoRef) {
-      currentVideoRef.addEventListener('timeupdate', handleTimeUpdate);
-  
-      return () => {
-        currentVideoRef.removeEventListener('timeupdate', handleTimeUpdate);
-      };
-    }
-  }, [handleTimeUpdate]);
+    return () => {
+      currentVideoRef.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }
+}, [handleTimeUpdate]);
 
 
 

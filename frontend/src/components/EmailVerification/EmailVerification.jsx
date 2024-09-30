@@ -20,8 +20,7 @@ const EmailVerification = () => {
         
         if (response.data && response.data.statusCode === 200) {
           setStatus('Email verified successfully!');
-          toast.success('Email verified successfully , Please Login Now !!');
-          setTimeout(() => navigate('/'), 2500); // Redirect to login after 3 seconds
+          setTimeout(() => navigate('/'), 2000); // Redirect to login after 2 seconds
         } else {
           throw new Error('Unexpected response structure');
         }
