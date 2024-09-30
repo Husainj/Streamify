@@ -292,6 +292,7 @@ useEffect(() => {
                 ref={videoRef}
                 src={video.videoFile}
                 controls
+                autoPlay
                 className="w-full rounded-lg shadow-lg mb-4"
                 style={{ aspectRatio: '16/9' }}
                 onTimeUpdate={handleTimeUpdate} 
