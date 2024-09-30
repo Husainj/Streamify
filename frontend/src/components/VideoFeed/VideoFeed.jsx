@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import VideoCard from '../VideoCard/VideoCard';
 import Sidebar from '../Sidebar/Sidebar';
 import api from '../../services/api'; // Use your existing API service
+import Loading from '../Loading/Loading';
 
 const VideoFeed = () => {
   const [videos, setVideos] = useState([]);
@@ -37,7 +38,9 @@ const VideoFeed = () => {
               </div>
             ))
           ) : (
-            <p className="text-white">No videos found.</p>
+            <div className='flex justify-center align-middle'>
+           <Loading />
+           </div>
           )}
         </div>
       </div>

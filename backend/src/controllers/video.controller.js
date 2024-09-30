@@ -63,58 +63,71 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 //no of views left 
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description} = req.body
-    // TODO: get video, upload to cloudinary, create video
+    const { title, description } = req.body;
 
-    if (
-        [title , description].some((field) => field?.trim() === "")
-      ) {
+    // Check for required fields
+    if ([title, description].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All fields are required");
-      }
-    
-    const thumbnailLocalPath = req.files?.thumbnail[0]?.path
-
-    if(!thumbnailLocalPath){
-        throw new ApiError(404 , "thumbnail is required")
     }
 
-    const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
-
-    if(!thumbnail){
-        throw new ApiError(400 , "Thumbnail file is required")
+    // Validate thumbnail presence
+    if (!req.files || !req.files.thumbnail || !req.files.thumbnail[0]) {
+        throw new ApiError(404, "Thumbnail is required");
     }
 
-    const videoLocalPath = req.files?.videoFile[0]?.path
+    const thumbnailFile = req.files.thumbnail[0];
+    const thumbnailBuffer = thumbnailFile.buffer;
+    const thumbnailFileName = thumbnailFile.originalname;
 
-    if(!videoLocalPath){
-        throw new ApiError(404 , "Video is required")
+    if (!thumbnailBuffer) {
+        throw new ApiError(430, "Thumbnail file is required, Buffer is missing");
     }
 
-    const videoFile = await uploadOnCloudinary(videoLocalPath)
+    // Upload thumbnail to Cloudinary
+    const thumbnail = await uploadOnCloudinary(thumbnailBuffer, thumbnailFileName);
 
-    if(!videoFile){
-        throw new ApiError(400 , "Video file is required")
+    if (!thumbnail) {
+        throw new ApiError(400, "Thumbnail file upload failed");
     }
 
-    // console.log("Video file :" , videoFile)
-const user = req.user
+    // Validate video file presence
+    if (!req.files || !req.files.videoFile || !req.files.videoFile[0]) {
+        throw new ApiError(404, "Video is required");
+    }
 
-    const duration = await videoFile.duration
-// console.log("duration :" , duration)
-    const video = await Video.create({
-        title ,
+    const videoFile = req.files.videoFile[0];
+    const videoBuffer = videoFile.buffer;
+    const videoFileName = videoFile.originalname;
+
+    if (!videoBuffer) {
+        throw new ApiError(430, "Video file is required, Buffer is missing");
+    }
+
+    // Upload video file to Cloudinary
+    const video = await uploadOnCloudinary(videoBuffer, videoFileName);
+
+    if (!video) {
+        throw new ApiError(400, "Video file upload failed");
+    }
+
+    const user = req.user;
+    const duration = await video.duration;
+
+    // Create a new video entry in the database
+    const newVideo = await Video.create({
+        title,
         description,
         duration,
-        owner : user,
-        thumbnail:thumbnail.url,
-        videoFile : videoFile.url
-    })
-
+        owner: user,
+        thumbnail: thumbnail.url,
+        videoFile: video.url
+    });
 
     return res
-    .status(200)
-    .json(new ApiResponse(202 , video , "New video uploaded"))
-})
+        .status(200)
+        .json(new ApiResponse(202, newVideo, "New video uploaded"));
+});
+
 
 //✅
 const getVideoById = asyncHandler(async (req, res) => {
