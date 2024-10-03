@@ -210,41 +210,61 @@ useEffect(() => {
 
   const toggleLike = async () => {
     try {
+      // Optimistically update the UI
+      setIsLiked(!isLiked);
+      setLikes(prevLikes => isLiked ? prevLikes - 1 : prevLikes + 1);
+
+      // Send the request to the backend
       const response = await api.post(`/likes/toggle/v/${id}`);
-      if (response.status === 200) {
-        const updatedLikes = await api.get(`likes/getLikes/${id}`);
-        console.log("Likes updated resposne : ",updatedLikes)
-        setIsLiked(updatedLikes.data.data.isLiked);
-        setLikes(updatedLikes.data.data.likeCount);
+      
+      if (response.status !== 200) {
+        // If the request fails, revert the optimistic update
+        setIsLiked(!isLiked);
+        setLikes(prevLikes => isLiked ? prevLikes + 1 : prevLikes - 1);
+        toast.error("Failed to update like status");
       }
     } catch (error) {
-      if(error.response.status === 420) {
+      // Revert the optimistic update
+      setIsLiked(!isLiked);
+      setLikes(prevLikes => isLiked ? prevLikes + 1 : prevLikes - 1);
+      
+      if (error.response && error.response.status === 420) {
         toast.error("Please Login!");
+      } else {
+        toast.error("An error occurred while updating like status");
       }
-      console.log(error)
+      console.log(error);
     }
   };
 
-  const toggleSubscription = async()=>{
+  const toggleSubscription = async () => {
     try {
+      // Optimistically update the UI
+      setIsSubscribed(!isSubscribed);
+      SetSubscriberCount(prevCount => isSubscribed ? prevCount - 1 : prevCount + 1);
+
+      // Send the request to the backend
       const response = await api.post(`/subscriptions/c/${video.owner._id}`);
-      console.log(" Subscription toggled : " , response.status)
-     
-      if(response.status === 200){
-       
-        const response = await api.get(`/users/c/${video.owner.username}`)
-   console.log("Subscriber count updated : " , response)
-       SetSubscriberCount(response.data.data.subscribersCount)
-       setIsSubscribed(response.data.data.isSubscribed)
-      console.log("Channel details : " , response.data.data)
+      
+      if (response.status !== 200) {
+        // If the request fails, revert the optimistic update
+        setIsSubscribed(!isSubscribed);
+        SetSubscriberCount(prevCount => isSubscribed ? prevCount + 1 : prevCount - 1);
+        toast.error("Failed to update subscription status");
       }
     } catch (error) {
-      if(error.response.status === 420) {
+      // Revert the optimistic update
+      setIsSubscribed(!isSubscribed);
+      SetSubscriberCount(prevCount => isSubscribed ? prevCount + 1 : prevCount - 1);
+      
+      if (error.response && error.response.status === 420) {
         toast.error("Please Login!");
+      } else {
+        toast.error("An error occurred while updating subscription status");
       }
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   if (!video) {
     return <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">Loading video...</div>;

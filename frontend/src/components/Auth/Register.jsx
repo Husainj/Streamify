@@ -35,7 +35,10 @@ const Register = ({ toggleRegister, switchToLogin }) => {
     setError(null);
     setLoading(true);
 
-  
+    if (!avatar) {
+      toast.error('Please upload an avatar before registering.');
+      return;
+    }
 
     try {
       const formData = new FormData();
@@ -153,9 +156,11 @@ const Register = ({ toggleRegister, switchToLogin }) => {
                   accept="image/*"
                   onChange={handleAvatarChange}
                   className="hidden"
+                  required
                 />
               </div>
             </div>
+            {!avatar && <p className="text-red-500 text-sm text-center">Avatar is required</p>}
 
             {/* Full Name */}
             <input
@@ -221,7 +226,7 @@ const Register = ({ toggleRegister, switchToLogin }) => {
             <button 
               type="submit" 
               className="w-full bg-blue-500 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!isUsernameValid}
+              disabled={!isUsernameValid || !avatar}
             >
               Register
             </button>
