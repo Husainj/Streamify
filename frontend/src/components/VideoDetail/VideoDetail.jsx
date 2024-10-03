@@ -209,6 +209,11 @@ useEffect(() => {
   };
 
   const toggleLike = async () => {
+
+    if (!isLoggedIn) {
+      toast.error("Please login to like this video!");
+      return;
+    }
     try {
       // Optimistically update the UI
       setIsLiked(!isLiked);
@@ -238,6 +243,10 @@ useEffect(() => {
   };
 
   const toggleSubscription = async () => {
+    if (!isLoggedIn) {
+      toast.error("Please login to subscribe!");
+      return;
+    }
     try {
       // Optimistically update the UI
       setIsSubscribed(!isSubscribed);
