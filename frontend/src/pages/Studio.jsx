@@ -1,27 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar/Sidebar';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, Edit , Menu} from 'lucide-react'; // Import Edit icon
-import VideoCardStudio from '../components/VideoCardStudio/VideoCardStudio'; // Import the VideoCard component
-import api from '../services/api'; // Adjust the path as necessary
-import Loading from '../components/Loading/Loading'; // Import the Loading component
-import axios from 'axios';
+import { PlusCircle, Menu } from 'lucide-react';
 import { useSelector } from 'react-redux';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+
+import Sidebar from '../components/Sidebar/Sidebar';
+import VideoCardStudio from '../components/VideoCardStudio/VideoCardStudio';
+import Loading from '../components/Loading/Loading';
 import MobileMenu from '../components/MobileMenu/MobileMenu';
-import { ToastContainer , toast } from 'react-toastify';
+import api from '../services/api';
+
 const Studio = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false); // Add state for edit modal
+  const [showEditModal, setShowEditModal] = useState(false);
   const [videos, setVideos] = useState([]);
   const [videoFile, setVideoFile] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentVideoId, setCurrentVideoId] = useState(null); // State for current video ID
+  const [currentVideoId, setCurrentVideoId] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-const user = useSelector((state)=>state.auth.user)
-const navigate = useNavigate();
+  const [videoToDelete, setVideoToDelete] = useState(null);
+
+  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchVideos = async () => {
       try {
@@ -30,24 +36,38 @@ const navigate = useNavigate();
         setVideos(response.data.data);
       } catch (error) {
         console.error('Error fetching videos:', error);
+        toast.error('Failed to fetch videos');
       }
     };
 
     fetchVideos();
-  }, [user , user._id]);
+  }, [user._id]);
 
   const toggleUploadModal = () => setShowUploadModal(!showUploadModal);
 
   const toggleEditModal = (video) => {
     setTitle(video.title);
     setDescription(video.description);
-    setThumbnail(video.thumbnail); // Assuming `thumbnail` is available in the video object
+    setThumbnail(video.thumbnail);
     setCurrentVideoId(video._id);
     setShowEditModal(!showEditModal);
   };
 
+  const validateForm = () => {
+    if (!title.trim()) {
+      toast.error('Title is required');
+      return false;
+    }
+    if (!description.trim()) {
+      toast.error('Description is required');
+      return false;
+    }
+    return true;
+  };
+
   const handleUploadVideo = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setLoading(true);
 
     const formData = new FormData();
@@ -57,19 +77,19 @@ const navigate = useNavigate();
     formData.append('description', description);
 
     try {
-     const response =  await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/`, formData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
-      })
-      if(response){
-        toast.success("Video Uploaded Successfully")
-      
+      });
+      if (response) {
+        toast.success('Video Uploaded Successfully');
         const vids = await api.get(`/dashboard/videos/${user._id}`);
-      setVideos(vids.data.data);
-      setShowUploadModal(false);
-    }
+        setVideos(vids.data.data);
+        setShowUploadModal(false);
+      }
     } catch (error) {
       console.error('Error uploading video:', error);
+      toast.error('Failed to upload video');
     } finally {
       setLoading(false);
     }
@@ -77,74 +97,83 @@ const navigate = useNavigate();
 
   const handleEditVideo = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setLoading(true);
 
     const formData = new FormData();
-    if (videoFile) formData.append('videoFile', videoFile);
-    if (thumbnail) formData.append('thumbnail', thumbnail);
+    if (thumbnail instanceof File) formData.append('thumbnail', thumbnail);
     formData.append('title', title);
     formData.append('description', description);
 
     try {
-      await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/${currentVideoId}`, formData, {
+      const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/${currentVideoId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
-      const response = await api.get('/dashboard/videos');
-      setVideos(response.data.data);
+
+      setVideos(prevVideos => prevVideos.map(video => 
+        video._id === currentVideoId ? { ...video, ...response.data.data } : video
+      ));
+
       setShowEditModal(false);
+      toast.success('Video updated successfully');
     } catch (error) {
       console.error('Error updating video:', error);
+      toast.error('Failed to update video');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (videoId) => {
+    setVideoToDelete(videoId);
+  };
+
+  const confirmDelete = async () => {
+    if (!videoToDelete) return;
+    
     try {
-      await api.delete(`/videos/${videoId}`);
-      setVideos(videos.filter(video => video._id !== videoId));
+      await api.delete(`/videos/${videoToDelete}`);
+      setVideos(videos.filter(video => video._id !== videoToDelete));
+      toast.success('Video deleted successfully');
     } catch (error) {
       console.error('Error deleting video:', error);
+      toast.error('Failed to delete video');
+    } finally {
+      setVideoToDelete(null);
     }
   };
 
   const handleClickOutside = (e) => {
     if (e.target.closest('.modal-content') === null) {
       setShowUploadModal(false);
-      setShowEditModal(false); // Close the edit modal if clicking outside
+      setShowEditModal(false);
     }
   };
 
   const handleNavigation = (path) => {
     navigate(path);
   };
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
   return (
     <div className="flex bg-gray-900 min-h-screen">
       <Sidebar />
       <div className="flex-1 md:ml-40 p-6 bg-gray-900 text-white min-h-screen">
-        
         <div className="flex justify-between items-center mb-6">
-        <div className="flex space-x-4">
-        <div className="md:hidden fixed top-0 left-0 z-50 p-4">
-          <button
-            onClick={toggleMobileMenu}
-            className="text-white focus:outline-none"
-          >
-            <Menu size={24} />
-          </button>
-        </div>
-
-        {isMobileMenuOpen && (
-        <MobileMenu
-          onClose={() => setIsMobileMenuOpen(false)}
-          onNavigate={handleNavigation}
-        />
-      )}
-        </div>
+          <div className="flex space-x-4">
+            <div className="md:hidden fixed top-0 left-0 z-50 p-4">
+              <button
+                onClick={toggleMobileMenu}
+                className="text-white focus:outline-none"
+              >
+                <Menu size={24} />
+              </button>
+            </div>
+          </div>
           <h1 className="text-2xl font-bold">My Studio</h1>
           <button
             onClick={toggleUploadModal}
@@ -228,8 +257,8 @@ const navigate = useNavigate();
                 >
                   Close
                 </button>
-                {loading && <Loading />}
               </form>
+              {loading && <Loading />}
             </div>
           </div>
         )}
@@ -283,14 +312,46 @@ const navigate = useNavigate();
                 >
                   Close
                 </button>
-                {loading && <Loading />}
               </form>
+              {loading && <Loading />} 
             </div>
           </div>
         )}
 
+        {/* Delete Confirmation Modal */}
+        {videoToDelete && (
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-gray-800 text-white p-6 rounded-lg w-full max-w-md">
+              <h2 className="text-2xl font-bold mb-4">Confirm Deletion</h2>
+              <p>Are you sure you want to delete this video?</p>
+              <div className="mt-4 flex justify-end space-x-4">
+                <button
+                  onClick={() => setVideoToDelete(null)}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <MobileMenu
+            onClose={() => setIsMobileMenuOpen(false)}
+            onNavigate={handleNavigation}
+          />
+        )}
+
         {/* Loading Spinner */}
-        {loading && <Loading />}
+       
       </div>
       <ToastContainer />
     </div>

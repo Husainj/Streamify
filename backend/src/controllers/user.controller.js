@@ -420,26 +420,31 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 
 const updateUserAvatar = asyncHandler(async(req, res)=>{
-   const avatarLocalPath = req.file?.path
 
-   if (!avatarLocalPath) {
-    throw new ApiError(400 , "Avatar file is missing")
-   }
+  if (!(req.file && req.file.fieldname === 'avatar')) {
+    throw new ApiError(400 , "File not found")
+  }
+    const avatarFile = req.file;
+    const avatarBuffer = avatarFile.buffer;
+    const avatarFileName = avatarFile.originalname;
 
-   const avatar = await uploadOnCloudinary(avatarLocalPath)
+    if (!avatarBuffer) {
+        throw new ApiError(400, "Avatar file is required, Buffer is missing");
+    }
 
-   if (!avatar.url) {
-    throw new ApiError(400 , "Error while uploading on avatar")
-   }
+    // Upload thumbnail to Cloudinary
+    const avatar = await uploadOnCloudinary(avatarBuffer, avatarFileName);
 
-   
+    if (!avatar) {
+        throw new ApiError(400, "Avatar file upload failed");
+    }
 
 
  const user =  await User.findByIdAndUpdate(
     req.user?._id,
     {
         $set:{
-            avatar: avatar.url
+             avatar: avatar.url,
         }
     },
     {new: true}
@@ -453,36 +458,40 @@ const updateUserAvatar = asyncHandler(async(req, res)=>{
 })
 
 const updateUserCoverImage = asyncHandler(async(req, res)=>{
-    const coverImageLocalPathNew = req.file?.path
- 
-    if (!coverImageLocalPathNew) {
-     throw new ApiError(400 , "coverImage file is missing")
+  if (!(req.file && req.file.fieldname === 'coverImage')) {
+    throw new ApiError(400 , "File not found")
+  }
+    const coverImageFile = req.file;
+    const coverImageBuffer = coverImageFile.buffer;
+    const coverImageFileName = coverImageFile.originalname;
+
+    if (!coverImageBuffer) {
+        throw new ApiError(400, "coverImage file is required, Buffer is missing");
     }
- 
-    const coverImage = await uploadOnCloudinary(coverImageLocalPathNew)
- 
-    if (!coverImage.url) {
-     throw new ApiError(400 , "Error while uploading on coverImage")
+
+    // Upload thumbnail to Cloudinary
+    const coverImage = await uploadOnCloudinary(coverImageBuffer, coverImageFileName);
+
+    if (!coverImage) {
+        throw new ApiError(400, "coverImage file upload failed");
     }
- 
- 
-
- const user =   await User.findByIdAndUpdate(
-     req.user?._id,
-     {
-         $set:{
-            coverImage: coverImage.url
-         }
-     },
-     {new: true}
-    ).select("-password")
 
 
-    return res
-    .status(200)
-    .json(
-        new ApiResponse(200 , user , "Cover image updated succesfully")
-    )
+ const user =  await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+        $set:{
+          coverImage: coverImage.url,
+        }
+    },
+    {new: true}
+   ).select("-password")
+
+   return res
+   .status(200)
+   .json(
+       new ApiResponse(200 , user , "coverImage updated succesfully")
+   )
  })
 
 const getUserChannelProfile = asyncHandler(async(req,res)=>{
