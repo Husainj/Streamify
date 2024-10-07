@@ -64,6 +64,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
 //no of views left 
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description } = req.body;
+    res.setHeader('Access-Control-Allow-Origin', 'https://streamify-mu-ten.vercel.app');
+res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 
     // Check for required fields
     if (!title?.trim() || !description?.trim()) {
