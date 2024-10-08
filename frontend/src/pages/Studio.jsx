@@ -80,6 +80,8 @@ const Studio = () => {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
+        maxContentLength: 50 * 1024 * 1024, // Increase the limit
+        maxBodyLength: 50 * 1024 * 1024, // Increase the limit
       });
       if (response) {
         toast.success('Video Uploaded Successfully');
