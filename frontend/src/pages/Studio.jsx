@@ -24,6 +24,7 @@ const Studio = () => {
   const [currentVideoId, setCurrentVideoId] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [videoToDelete, setVideoToDelete] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
@@ -65,24 +66,58 @@ const Studio = () => {
     return true;
   };
 
+  const uploadToCloudinary = async (file, resourceType) => {
+    const cloudName = `${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}`; // Replace with your Cloudinary cloud name
+    const uploadPreset = `${import.meta.env.VITE_UPLOAD_PRESET}`; // Replace with your upload preset
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+
+    try {
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error uploading ${resourceType} to Cloudinary:`, error);
+      throw error;
+    }
+  };
+
   const handleUploadVideo = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
     setLoading(true);
-
-    const formData = new FormData();
-    formData.append('videoFile', videoFile);
-    formData.append('thumbnail', thumbnail);
-    formData.append('title', title);
-    formData.append('description', description);
+    setUploadProgress(0);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/videos/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true,
-        maxContentLength: 50 * 1024 * 1024, // Increase the limit
-        maxBodyLength: 50 * 1024 * 1024, // Increase the limit
-      });
+      // Step 1: Upload video to Cloudinary
+      const videoData = await uploadToCloudinary(videoFile, 'video');
+      
+      // Step 2: Upload thumbnail to Cloudinary
+      const thumbnailData = await uploadToCloudinary(thumbnail, 'image');
+
+      // Step 3: Save video details to your backend
+      const videoDetails = {
+        title,
+        description,
+        videoUrl: videoData.secure_url,
+        thumbnailUrl: thumbnailData.secure_url,
+        duration: videoData.duration
+        // Add any other necessary fields
+      };
+
+      const response = await api.post('/videos', videoDetails);
+
       if (response) {
         toast.success('Video Uploaded Successfully');
         const vids = await api.get(`/dashboard/videos/${user._id}`);
@@ -94,6 +129,7 @@ const Studio = () => {
       toast.error('Failed to upload video');
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -246,11 +282,23 @@ const Studio = () => {
                     rows="4"
                   ></textarea>
                 </div>
+                {uploadProgress > 0 && (
+                  <div className="mb-4">
+                    <div className="w-full bg-gray-700 rounded-full h-2.5">
+                      <div
+                        className="bg-blue-600 h-2.5 rounded-full"
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm mt-1">{uploadProgress}% Uploaded</p>
+                  </div>
+                )}
                 <button
                   type="submit"
                   className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                  disabled={loading}
                 >
-                  Upload
+                  {loading ? 'Uploading...' : 'Upload'}
                 </button>
                 <button
                   type="button"
@@ -319,7 +367,6 @@ const Studio = () => {
             </div>
           </div>
         )}
-
         {/* Delete Confirmation Modal */}
         {videoToDelete && (
           <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">

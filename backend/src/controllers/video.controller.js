@@ -63,43 +63,30 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 //no of views left 
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description } = req.body;
-  
+    const { title, description, videoUrl, thumbnailUrl, duration } = req.body;
 
     // Check for required fields
-    if (!title?.trim() || !description?.trim()) {
-        throw new ApiError(400, "Title and description are required");
+    if (!title?.trim() || !description?.trim() || !videoUrl || !thumbnailUrl) {
+        throw new ApiError(400, "Title, description, video URL, and thumbnail URL are required");
     }
 
-    // Validate file uploads
-    const { thumbnail, videoFile } = req.files || {};
-    if (!thumbnail?.[0] || !videoFile?.[0]) {
-        throw new ApiError(400, "Both thumbnail and video file are required");
-    }
-
-    // Upload thumbnail
-    const thumbnailResult = await uploadOnCloudinary(thumbnail[0].buffer, thumbnail[0].originalname);
-    if (!thumbnailResult) {
-        throw new ApiError(400, "Thumbnail upload failed");
-    }
-
-    // Upload video
-    const videoResult = await uploadOnCloudinary(videoFile[0].buffer, videoFile[0].originalname);
-    if (!videoResult) {
-        throw new ApiError(400, "Video upload failed");
+    // Validate URLs (basic check, you might want to add more robust validation)
+    const urlRegex = /^https?:\/\/.+/;
+    if (!urlRegex.test(videoUrl) || !urlRegex.test(thumbnailUrl)) {
+        throw new ApiError(400, "Invalid video or thumbnail URL");
     }
 
     // Create video entry
     const newVideo = await Video.create({
         title,
         description,
-        duration: videoResult.duration,
-        owner: req.user, // Assuming req.user is populated with user details
-        thumbnail: thumbnailResult.url,
-        videoFile: videoResult.url
+        duration: duration || 0, // Use provided duration or default to 0
+        owner: req.user._id, // Assuming req.user is populated with user details
+        thumbnail: thumbnailUrl,
+        videoFile: videoUrl
     });
 
-    res.status(201).json(new ApiResponse(201, newVideo, "Video uploaded successfully"));
+    res.status(201).json(new ApiResponse(201, newVideo, "Video published successfully"));
 });
 
 
