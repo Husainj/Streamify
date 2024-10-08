@@ -283,16 +283,20 @@ const Studio = () => {
                   ></textarea>
                 </div>
                 {uploadProgress > 0 && (
-                  <div className="mb-4">
-                    <div className="w-full bg-gray-700 rounded-full h-2.5">
-                      <div
-                        className="bg-blue-600 h-2.5 rounded-full"
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-sm mt-1">{uploadProgress}% Uploaded</p>
-                  </div>
-                )}
+  <div className="mb-4">
+    <div className="relative w-full bg-gray-300 rounded-full h-4 overflow-hidden shadow-inner">
+      <div
+        className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-800 animate-pulse transition-all duration-500 ease-out"
+        style={{ width: `${uploadProgress}%` }}
+      ></div>
+    </div>
+    <div className="flex justify-between mt-1 text-sm font-medium text-gray-700">
+      <p>Uploading...</p>
+      <p className="text-blue-700">{uploadProgress}%</p>
+    </div>
+  </div>
+)}
+
                 <button
                   type="submit"
                   className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
