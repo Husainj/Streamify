@@ -3,7 +3,7 @@ import axios from 'axios';
 import Loading from '../Loading/Loading';
 import { extractErrorMessage } from '../../services/extractError';
 import { toast, ToastContainer } from 'react-toastify';
-import { UploadIcon } from 'lucide-react';
+import { UploadIcon, X, Check, XCircle } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Register = ({ toggleRegister, switchToLogin }) => {
@@ -20,6 +20,14 @@ const Register = ({ toggleRegister, switchToLogin }) => {
   const [registered, setRegistered] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [isUsernameValid, setIsUsernameValid] = useState(true);
+  const [isPasswordValid, setIsPasswordValid] = useState(true);
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    digit: false,
+    specialChar: false,
+  });
 
   useEffect(() => {
     validateUsername(username);
@@ -28,6 +36,18 @@ const Register = ({ toggleRegister, switchToLogin }) => {
   const validateUsername = (value) => {
     const isValid = !/[A-Z\s]/.test(value);
     setIsUsernameValid(isValid);
+  };
+
+  const validatePassword = (value) => {
+    const criteria = {
+      length: value.length >= 8,
+      uppercase: /[A-Z]/.test(value),
+      lowercase: /[a-z]/.test(value),
+      digit: /\d/.test(value),
+      specialChar: /[@$!%*?&#]/.test(value),
+    };
+    setPasswordCriteria(criteria);
+    setIsPasswordValid(Object.values(criteria).every(Boolean));
   };
 
   const handleRegister = async (e) => {
@@ -49,10 +69,13 @@ const Register = ({ toggleRegister, switchToLogin }) => {
       if (avatar) formData.append('avatar', avatar);
       if (coverImage) formData.append('coverImage', coverImage);
 
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/users/register`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      console.log('Registration response: ', response);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/users/register`,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
 
       if (response.data.statusCode === 200 || response.data.statusCode === 201) {
         setRegistered(true);
@@ -75,7 +98,9 @@ const Register = ({ toggleRegister, switchToLogin }) => {
     setResendLoading(true);
     setError(null);
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/users/resend-verification`, { email });
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/users/resend-verification`, {
+        email,
+      });
       alert('Verification email resent. Please check your inbox.');
     } catch (error) {
       const errorMessage = extractErrorMessage(error.response.data);
@@ -107,11 +132,18 @@ const Register = ({ toggleRegister, switchToLogin }) => {
 
   if (registered) {
     return (
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-        <div className="bg-gray-800 text-white p-6 rounded-lg w-full max-w-sm">
+      <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 overflow-hidden">
+        <div className="bg-gray-800 text-white p-6 rounded-lg w-full max-w-sm relative">
+          <button
+            onClick={toggleRegister}
+            className="absolute top-2 right-2 text-gray-500 hover:text-gray-300"
+          >
+            <XCircle className="w-6 h-6" />
+          </button>
           <h2 className="text-2xl font-bold mb-4 text-center">Registration Successful</h2>
           <p className="text-center mb-4">
-            Thank you for registering! Please check your email to verify your account. If you didn't receive the email, you can request to resend it.
+            Thank you for registering! Please check your email to verify your account. If you didn't
+            receive the email, you can request to resend it.
           </p>
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
           <button
@@ -121,7 +153,10 @@ const Register = ({ toggleRegister, switchToLogin }) => {
           >
             {resendLoading ? <Loading /> : 'Resend Verification Email'}
           </button>
-          <button onClick={switchToLogin} className="w-full bg-green-500 py-2 rounded-lg hover:bg-green-600">
+          <button
+            onClick={switchToLogin}
+            className="w-full bg-green-500 py-2 rounded-lg hover:bg-green-600"
+          >
             Proceed to Login
           </button>
         </div>
@@ -131,15 +166,23 @@ const Register = ({ toggleRegister, switchToLogin }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-gray-800 text-white p-6 rounded-lg w-full max-w-sm">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 overflow-hidden">
+      <div className="bg-gray-800 text-white p-6 rounded-lg w-full max-w-sm relative max-h-screen" style={{ overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <style>
+    {`::-webkit-scrollbar { display: none; }`}
+  </style>
+        <button
+          onClick={toggleRegister}
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-300"
+        >
+          <XCircle className="w-6 h-6" />
+        </button>
         <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         {loading ? (
           <Loading />
         ) : (
           <form onSubmit={handleRegister} className="space-y-4">
-            {/* Avatar Upload */}
             <div className="flex justify-center mb-4">
               <div
                 className="relative w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-600 overflow-hidden"
@@ -161,8 +204,6 @@ const Register = ({ toggleRegister, switchToLogin }) => {
               </div>
             </div>
             {!avatar && <p className="text-red-500 text-sm text-center">Avatar is required</p>}
-
-            {/* Full Name */}
             <input
               type="text"
               placeholder="Full Name"
@@ -171,7 +212,6 @@ const Register = ({ toggleRegister, switchToLogin }) => {
               className="w-full px-4 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-            {/* Email */}
             <input
               type="email"
               placeholder="Email"
@@ -180,7 +220,6 @@ const Register = ({ toggleRegister, switchToLogin }) => {
               className="w-full px-4 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-            {/* Channel Name */}
             <input
               type="text"
               placeholder="Channel Name"
@@ -194,54 +233,74 @@ const Register = ({ toggleRegister, switchToLogin }) => {
               required
             />
             {!isUsernameValid && (
-              <p className="text-red-500 text-sm">Channel Name must be lowercase without spaces</p>
+              <p className="text-red-500 text-sm">Username should not contain spaces or uppercase letters</p>
             )}
-            {/* Password */}
             <input
               type="password"
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                validatePassword(e.target.value);
+              }}
+              className={`w-full px-4 py-2 bg-gray-700 rounded-lg border ${
+                isPasswordValid ? 'border-gray-600' : 'border-red-500'
+              } focus:outline-none focus:ring-2 ${
+                isPasswordValid ? 'focus:ring-blue-500' : 'focus:ring-red-500'
+              }`}
               required
             />
-            {/* Cover Image */}
+            <ul className="text-xs text-gray-400">
+              <li className={passwordCriteria.length ? 'text-green-500' : 'text-gray-400'}>
+                Must be at least 8 characters long
+              </li>
+              <li className={passwordCriteria.uppercase ? 'text-green-500' : 'text-gray-400'}>
+                Must contain at least one uppercase letter
+              </li>
+              <li className={passwordCriteria.lowercase ? 'text-green-500' : 'text-gray-400'}>
+                Must contain at least one lowercase letter
+              </li>
+              <li className={passwordCriteria.digit ? 'text-green-500' : 'text-gray-400'}>
+                Must contain at least one number
+              </li>
+              <li className={passwordCriteria.specialChar ? 'text-green-500' : 'text-gray-400'}>
+                Must contain at least one special character (@$!%*?&#)
+              </li>
+            </ul>
             <div>
+              <label htmlFor="coverImage" className="block text-sm font-medium">
+                Cover Image (Optional)
+              </label>
               <input
                 type="file"
                 id="coverImage"
                 accept="image/*"
                 onChange={handleCoverImageChange}
-                className="hidden"
+                className="mt-2"
               />
-              <label htmlFor="coverImage" className="w-full px-4 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer inline-block">
-                {coverImagePreview ? (
-                  <img src={coverImagePreview} alt="Cover Preview" className="object-cover w-full h-24" />
-                ) : (
-                  'Upload Cover Image'
-                )}
-              </label>
+              {coverImagePreview && (
+                <div className="mt-2">
+                  <img src={coverImagePreview} alt="Cover Preview" className="w-full h-auto rounded-lg" />
+                </div>
+              )}
             </div>
-            {/* Register Button */}
-            <button 
-              type="submit" 
-              className="w-full bg-blue-500 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!isUsernameValid || !avatar}
+            <button
+              type="submit"
+              className="w-full bg-blue-500 py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center"
+              disabled={!isUsernameValid || !isPasswordValid}
             >
-              Register
+              {loading ? <Loading /> : 'Register'}
             </button>
+            <p className="text-sm text-center">
+              Already have an account?{' '}
+              <button type="button" onClick={switchToLogin} className="text-blue-500 hover:underline">
+                Login here
+              </button>
+            </p>
           </form>
         )}
-        <div className="flex justify-between mt-4">
-          <button className="text-blue-500" onClick={switchToLogin}>
-            Login
-          </button>
-          <button className="text-gray-400" onClick={toggleRegister}>
-            Cancel
-          </button>
-        </div>
-        <ToastContainer />
       </div>
+      <ToastContainer />
     </div>
   );
 };

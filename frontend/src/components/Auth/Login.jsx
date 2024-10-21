@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
+import {Eye , EyeOff} from "lucide-react" // Icons for showing/hiding password
 import Loading from '../Loading/Loading';
 import api from "../../services/api";
 import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer, toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
 import { setUser } from '../../redux/slices/authSlice';
 import { extractErrorMessage } from '../../services/extractError';
 
 const Login = ({ toggleLogin, switchToRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState(null); // State for unverified email
@@ -24,7 +26,7 @@ const Login = ({ toggleLogin, switchToRegister }) => {
 
     try {
       const response = await api.post('/users/login', {
-        username,
+        username: username.toLowerCase(), // Ensure username is in lowercase
         password
       });
 
@@ -44,6 +46,11 @@ const Login = ({ toggleLogin, switchToRegister }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   // Function to resend verification email
@@ -72,15 +79,29 @@ const Login = ({ toggleLogin, switchToRegister }) => {
               placeholder="Channel Name"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              autoCapitalize="none" // Prevent capitalization of the first letter
               className="w-full px-4 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            
+            {/* Password Input */}
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'} // Toggle password visibility
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {/* Toggle button for password visibility */}
+              <button
+                type="button"
+                className="absolute right-3 top-2 text-gray-400 hover:text-white"
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <Eye /> : <EyeOff />}
+              </button>
+            </div>
+
             <button type="submit" className="w-full bg-blue-500 py-2 rounded-lg hover:bg-blue-600">
               Login
             </button>

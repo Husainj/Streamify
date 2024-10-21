@@ -291,7 +291,6 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Verification email resent successfully"));
 });
 
-
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
@@ -417,7 +416,6 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
-
 
 const updateUserAvatar = asyncHandler(async(req, res)=>{
 
@@ -655,6 +653,7 @@ return res
 )
 
 })
+
 const getWatchHistory = asyncHandler(async(req , res)=>{
      const user = await User.aggregate([
       {
