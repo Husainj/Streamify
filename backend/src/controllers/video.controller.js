@@ -8,7 +8,7 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import fs from "fs"
 //✅
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy = 'createdAt', sortType = 'desc', userId } = req.query;
+    const { page = 1, limit = 100, query, sortBy = 'createdAt', sortType = 'desc', userId } = req.query;
 
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
