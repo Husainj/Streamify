@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {Upload} from 'lucide-react' // Import the upload icon
+import {Upload , Video} from 'lucide-react' // Import the upload icon
 import VideoCard from '../VideoCard/VideoCard';
 import Sidebar from '../Sidebar/Sidebar';
 import api from '../../services/api'; 
@@ -60,7 +60,7 @@ const VideoFeed = () => {
         {/* Floating Plus Button */}
         {isItLoggedIn &&  <div className="fixed bottom-6 right-6">
           <button className="bg-red-500 hover:bg-red-400 text-white font-bold p-6 rounded-full shadow-lg border-1 border-white" onClick={handlePlusClick}>
-            <Upload size={24} />
+            <Video size={24} />
           </button>
         </div>
         }
