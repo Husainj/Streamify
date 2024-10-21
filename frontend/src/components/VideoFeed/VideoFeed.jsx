@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import {Upload} from 'lucide-react' // Import the upload icon
 import VideoCard from '../VideoCard/VideoCard';
 import Sidebar from '../Sidebar/Sidebar';
 import api from '../../services/api'; 
 import Loading from '../Loading/Loading';
-
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 const VideoFeed = () => {
   const [videos, setVideos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const navigate = useNavigate();
+  const isItLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   useEffect(() => {
     // Fetch videos from the backend
     const fetchVideos = async () => {
@@ -24,6 +27,10 @@ const VideoFeed = () => {
 
     fetchVideos();
   }, []);
+
+  const handlePlusClick = () => {
+    navigate('/studio');
+  };
 
   return (
     <div>
@@ -49,6 +56,15 @@ const VideoFeed = () => {
             </div>
           )}
         </div>
+
+        {/* Floating Plus Button */}
+        {isItLoggedIn &&  <div className="fixed bottom-6 right-6">
+          <button className="bg-red-500 hover:bg-red-400 text-white font-bold p-6 rounded-full shadow-lg border-1 border-white" onClick={handlePlusClick}>
+            <Upload size={24} />
+          </button>
+        </div>
+        }
+    
       </div>
     </div>
   );

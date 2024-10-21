@@ -39,9 +39,9 @@ const Header = () => {
          setShowDropdown(false);
   };
 
-  const handlePlusClick = () => {
-    navigate('/studio');
-  };
+  // const handlePlusClick = () => {
+  //   navigate('/studio');
+  // };
   const switchToRegister = () => {
     setShowLoginModal(false);
     setShowRegisterModal(true);
@@ -103,9 +103,9 @@ const Header = () => {
         <div className="flex items-center md:ml-40 relative">
           {isItLoggedIn ? (
             <div className="flex items-center">
-              <button className="p-2" onClick={handlePlusClick}>
+              {/* <button className="p-2" onClick={handlePlusClick}>
                 <PlusCircle size={24} />
-              </button>
+              </button> */}
               <button className="p-2 relative" onClick={toggleDropdown}>
                 {user.avatar ? (
                   <div className='flex flex-row gap-2'>
