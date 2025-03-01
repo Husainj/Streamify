@@ -60,8 +60,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
     }
 })
 
-
-//no of views left 
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description, videoUrl, thumbnailUrl, duration } = req.body;
 
