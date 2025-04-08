@@ -2,6 +2,10 @@
 
 Streamify is a full-stack video streaming platform inspired by YouTube. Built using the MERN stack, it allows users to upload, edit, delete, and view videos, interact through likes and comments, and explore content shared by other creators. Whether you're a viewer or a content creator, Streamify brings a modern video sharing experience to your fingertips.
 
+## 🔗 Live Demo
+
+👉 [Click here to visit Streamify](https://streamify-mu-ten.vercel.app/) 
+
 ## 🚀 Features
 
 - 🔐 User Authentication (Sign In / Sign Up)
